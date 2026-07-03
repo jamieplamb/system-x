@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Point the package homepage and docs links at the new documentation site.
+
 ## 1.0.0
 
 First public release.

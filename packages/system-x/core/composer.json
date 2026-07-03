@@ -1,7 +1,7 @@
 {
     "name": "system-x/core",
     "description": "An X11-style desktop framework for Laravel.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "keywords": [
         "laravel",
         "desktop",
@@ -12,7 +12,7 @@
         "websockets"
     ],
     "license": "MIT",
-    "homepage": "https://github.com/jamieplamb/system-x",
+    "homepage": "https://jamieplamb.github.io/system-x-docs/",
     "authors": [
         {
             "name": "Jamie Lamb"
@@ -20,7 +20,8 @@
     ],
     "support": {
         "issues": "https://github.com/jamieplamb/system-x/issues",
-        "source": "https://github.com/jamieplamb/system-x"
+        "source": "https://github.com/jamieplamb/system-x",
+        "docs": "https://jamieplamb.github.io/system-x-docs/"
     },
     "require": {
         "php": "^8.3",
