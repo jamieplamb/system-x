@@ -22,8 +22,10 @@ This is the project monorepo:
   own Composer package.
 - The Laravel app at the root is a reference host that runs the demo desktop.
 
-A proper documentation site is on the way. Until then, the reference host below
-is the best tour of what the framework does.
+The documentation lives at
+[jamieplamb.github.io/system-x-docs](https://jamieplamb.github.io/system-x-docs/),
+covering installation, building apps, adding widgets, shipping packages and the
+wire protocol. The reference host below is the best live tour.
 
 ## Using it in your own app
 
@@ -32,8 +34,9 @@ composer require system-x/core
 ```
 
 Wire a route to `Desktop::render()`, run the migrations, and point the app at a
-Reverb server. Full install docs are coming with the docs site; in the meantime
-the reference host in this repo is a working setup you can crib from.
+Reverb server. The full walkthrough is in the
+[installation guide](https://jamieplamb.github.io/system-x-docs/guide/installation),
+and the reference host in this repo is a working setup you can crib from.
 
 ## Running the reference host
 
