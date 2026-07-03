@@ -1,0 +1,66 @@
+/* ============================================================
+   system-x — Bevels, borders, depth
+   The 3D edge is the soul of the look. Every raised/sunken surface is
+   a flat-shaded bevel built from a light/shadow pair, expressed as
+   layered inset box-shadows so it maps 1:1 to CSS. Corners are ALWAYS
+   sharp. Override the light/shadow pair per-theme and every bevel
+   re-renders.
+   ============================================================ */
+
+:root {
+  /* The light/shadow pair every bevel is built from */
+  --sx-bevel-light:     #ffffff;
+  --sx-bevel-lightsoft: var(--sx-grey-100);
+  --sx-bevel-shadow:    var(--sx-grey-400);
+  --sx-bevel-dark:      var(--sx-grey-600);
+  --sx-bevel-black:     var(--sx-grey-800);
+
+  /* --- 2px chunky bevels (buttons, window frame, panel) --- */
+  --sx-raised: inset  1px  1px 0 0 var(--sx-bevel-light),
+               inset -1px -1px 0 0 var(--sx-bevel-black),
+               inset  2px  2px 0 0 var(--sx-bevel-lightsoft),
+               inset -2px -2px 0 0 var(--sx-bevel-dark);
+
+  --sx-sunken: inset  1px  1px 0 0 var(--sx-bevel-black),
+               inset -1px -1px 0 0 var(--sx-bevel-light),
+               inset  2px  2px 0 0 var(--sx-bevel-dark),
+               inset -2px -2px 0 0 var(--sx-bevel-lightsoft);
+
+  /* Pressed = the raised face pushed in (single-step inset, no double light) */
+  --sx-pressed: inset 1px 1px 0 0 var(--sx-bevel-dark),
+                inset 2px 2px 0 0 var(--sx-bevel-shadow),
+                inset -1px -1px 0 0 var(--sx-bevel-lightsoft);
+
+  /* --- 1px thin bevels (list rows, tags, compact controls) --- */
+  --sx-raised-thin: inset  1px  1px 0 0 var(--sx-bevel-light),
+                    inset -1px -1px 0 0 var(--sx-bevel-dark);
+  --sx-sunken-thin: inset  1px  1px 0 0 var(--sx-bevel-dark),
+                    inset -1px -1px 0 0 var(--sx-bevel-light);
+
+  /* --- Groove / ridge (separators, group frames) --- */
+  --sx-groove: inset  1px  1px 0 0 var(--sx-bevel-shadow),
+               inset -1px -1px 0 0 var(--sx-bevel-light),
+               inset  2px  2px 0 0 var(--sx-bevel-light),
+               inset -2px -2px 0 0 var(--sx-bevel-shadow);
+  --sx-ridge:  inset  1px  1px 0 0 var(--sx-bevel-light),
+               inset -1px -1px 0 0 var(--sx-bevel-shadow),
+               inset  2px  2px 0 0 var(--sx-bevel-shadow),
+               inset -2px -2px 0 0 var(--sx-bevel-light);
+
+  /* Focus: a 1px dotted inset rectangle, Motif-style (not a glow) */
+  --sx-focus-outline: 1px dotted var(--sx-grey-900); /* @kind other */
+  --sx-focus-outline-on-accent: 1px dotted rgba(255,255,255,.85); /* @kind other */
+
+  /* --- Drop shadows / elevation --- */
+  /* Floating windows: a hard 1px black edge + a soft cast shadow */
+  --sx-shadow-window: 1.5px 1.5px 0 0 rgba(16,14,8,.55),
+                      7px 9px 22px -4px rgba(16,14,8,.45);
+  /* Pop-ups (menus, tooltips): a tighter hard shadow */
+  --sx-shadow-popup:  2px 2px 0 0 rgba(16,14,8,.42),
+                      4px 5px 10px -2px rgba(16,14,8,.30);
+
+  /* --- Structural --- */
+  --sx-frame-width: 3px;   /* the chunky outer window frame */
+  --sx-border-hair: 1px solid var(--sx-grey-500);
+  --sx-radius: 0px;        /* corners are ALWAYS sharp — never round a system-x edge */
+}

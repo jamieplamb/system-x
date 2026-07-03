@@ -1,0 +1,8 @@
+{
+    "name": "@system-x/core-client",
+    "private": true,
+    "type": "module",
+    "scripts": { "build": "node build.mjs", "test": "vitest run" },
+    "dependencies": { "laravel-echo": "^2.3.7", "pusher-js": "^8.5.0" },
+    "devDependencies": { "esbuild": "0.24.0", "jsdom": "^29.1.1", "vitest": "^4.1.9" }
+}

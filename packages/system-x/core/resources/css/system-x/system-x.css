@@ -1,0 +1,29 @@
+/* ============================================================
+   system-x — Desktop stylesheet entry
+   The ONE file the desktop page links. Mirrors the design system's
+   styles.css @import manifest (docs/design/.../project/styles.css):
+   fonts -> tokens -> themes -> accents -> base class hooks -> the richer
+   widget hooks. Then a thin surface.css bridges the design's assumed
+   surface model to our real boot DOM. Order matters -- themes override
+   the base scales, base.css + widgets.css consume them, surface.css glues
+   it to the live mount.
+
+   The token + base files are VENDORED copies of the design source under
+   docs/design (kept untouched as the reference). Re-sync them when the
+   design system updates.
+   ============================================================ */
+
+@import './tokens/fonts.css';
+@import './tokens/colors.css';
+@import './tokens/bevels.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/themes.css';
+@import './tokens/accents.css';
+@import './tokens/layers.css';
+@import './base.css';
+@import './widgets.css';
+@import './surface.css';
+@import './panel.css';
+@import './context-menu.css';
+@import './greeter.css';

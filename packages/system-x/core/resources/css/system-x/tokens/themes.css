@@ -1,0 +1,261 @@
+/* ============================================================
+   system-x — Themes
+   A theme is JUST a token override. No component CSS lives here.
+
+   THE DEFAULT IS MODERN. With no data-sx-theme attribute a consumer gets
+   the modern (GNOME/libadwaita-style) look: rounded, flat, soft-shadowed.
+   The beveled X11/Motif heritage lives on as the "pewter" / "nextstep" /
+   "onyx" classic themes — proving the token system flexes the whole way
+   from modern-flat to hard-bevel retro with NO markup change.
+
+     · default (:root)        — Modern light  (alias: data-sx-theme="modern" / "adwaita")
+     · data-sx-theme="dark"   — Modern dark   (alias: "adwaita-dark")
+     · data-sx-theme="pewter" — Classic: warm grey, blue chrome, hard bevels
+     · data-sx-theme="nextstep" — Classic: cool grey, black title bars
+     · data-sx-theme="onyx"     — Classic: warm dark, hard bevels
+   ============================================================ */
+
+/* ===================== DEFAULT — Modern light ===================== */
+/* This :root override sits after the pewter-era base files, so it wins
+   and becomes the standard look. */
+:root,
+[data-sx-theme='modern'],
+[data-sx-theme='adwaita'] {
+  --sx-radius: 9px;            /* round everything */
+  --sx-frame-width: 0px;       /* no chunky frame — header bar meets content */
+
+  --sx-face:          #fafafa;
+  --sx-face-raised:   #ffffff;
+  --sx-face-sunken:   #ffffff;
+  --sx-surface-bright:#ffffff;
+  --sx-surface-desk:  #1f1f23;
+  --sx-desktop-bg: radial-gradient(135% 135% at 22% 0%, #5d7fb4 0%, #3d5079 44%, #262f47 100%); /* @kind other */
+
+  --sx-text:          #1d1d20;
+  --sx-text-soft:     #3d3d42;
+  --sx-text-muted:    #6a6a72;
+  --sx-text-disabled: #b0b0b6;
+  --sx-text-on-bright:#1d1d20;
+
+  /* soft, flat "bevels" — 1px hairline borders + gentle shadows */
+  --sx-raised:      inset 0 0 0 1px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.10); /* @kind shadow */
+  --sx-sunken:      inset 0 0 0 1px rgba(0,0,0,.16); /* @kind shadow */
+  --sx-pressed:     inset 0 0 0 1px rgba(0,0,0,.18), inset 0 1px 3px rgba(0,0,0,.14); /* @kind shadow */
+  --sx-raised-thin: inset 0 0 0 1px rgba(0,0,0,.08); /* @kind shadow */
+  --sx-sunken-thin: inset 0 0 0 1px rgba(0,0,0,.10); /* @kind shadow */
+  --sx-groove:      inset 0 -1px 0 rgba(0,0,0,.10); /* @kind shadow */
+  --sx-ridge:       inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 0 rgba(0,0,0,.10); /* @kind shadow */
+  --sx-shadow-window: 0 14px 40px -8px rgba(0,0,0,.34), 0 4px 12px -4px rgba(0,0,0,.22);
+  --sx-shadow-popup:  0 8px 24px -6px rgba(0,0,0,.30), 0 2px 6px rgba(0,0,0,.16);
+
+  --sx-engrave: none; /* @kind shadow */
+  --sx-engrave-disabled: none; /* @kind shadow */
+  --sx-focus-outline: 2px solid var(--sx-accent); /* @kind other */
+
+  --sx-accent:        #3584e4;
+  --sx-accent-strong: #1c71d8;
+  --sx-selection-bg:  #3584e4;
+  --sx-focus-ring:    #3584e4;
+
+  /* flat header bar — light grey by default; an accent choice tints it */
+  --sx-titlebar-active-from:   #ebebed;
+  --sx-titlebar-active-to:     #e1e1e4;
+  --sx-titlebar-active-text:   #1d1d20;
+  --sx-titlebar-inactive-from: #f6f6f7;
+  --sx-titlebar-inactive-to:   #f1f1f2;
+  --sx-titlebar-inactive-text: #9a9aa0;
+  --sx-window-border:          rgba(0,0,0,.18);
+}
+
+/* ===================== Modern dark ===================== */
+[data-sx-theme='dark'],
+[data-sx-theme='adwaita-dark'] {
+  --sx-radius: 9px;
+  --sx-frame-width: 0px;
+
+  --sx-face:          #2e2e32;
+  --sx-face-raised:   #3a3a3f;
+  --sx-face-sunken:   #1f1f23;
+  --sx-surface-bright:#1f1f23;
+  --sx-surface-desk:  #161618;
+  --sx-desktop-bg: radial-gradient(135% 135% at 22% 0%, #2e3650 0%, #1d212b 56%, #131418 100%); /* @kind other */
+
+  --sx-text:          #f2f2f4;
+  --sx-text-soft:     #c8c8cd;
+  --sx-text-muted:    #9a9aa2;
+  --sx-text-disabled: #5f5f66;
+  --sx-text-on-bright:#f2f2f4;
+
+  --sx-raised:      inset 0 0 0 1px rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.40); /* @kind shadow */
+  --sx-sunken:      inset 0 0 0 1px rgba(0,0,0,.55); /* @kind shadow */
+  --sx-pressed:     inset 0 0 0 1px rgba(0,0,0,.6), inset 0 1px 3px rgba(0,0,0,.5); /* @kind shadow */
+  --sx-raised-thin: inset 0 0 0 1px rgba(255,255,255,.06); /* @kind shadow */
+  --sx-sunken-thin: inset 0 0 0 1px rgba(0,0,0,.45); /* @kind shadow */
+  --sx-groove:      inset 0 -1px 0 rgba(0,0,0,.5); /* @kind shadow */
+  --sx-ridge:       inset 0 1px 0 rgba(255,255,255,.06), inset 0 -1px 0 rgba(0,0,0,.5); /* @kind shadow */
+  --sx-shadow-window: 0 16px 44px -8px rgba(0,0,0,.6), 0 4px 14px -4px rgba(0,0,0,.45);
+  --sx-shadow-popup:  0 8px 24px -6px rgba(0,0,0,.55);
+
+  --sx-engrave: none; /* @kind shadow */
+  --sx-engrave-disabled: none; /* @kind shadow */
+  --sx-focus-outline: 2px solid var(--sx-accent); /* @kind other */
+
+  --sx-accent:        #78aeed;
+  --sx-accent-strong: #3584e4;
+  --sx-selection-bg:  #3584e4;
+  --sx-focus-ring:    #78aeed;
+
+  --sx-titlebar-active-from:   #38383d;
+  --sx-titlebar-active-to:     #303034;
+  --sx-titlebar-active-text:   #f2f2f4;
+  --sx-titlebar-inactive-from: #2b2b2f;
+  --sx-titlebar-inactive-to:   #262629;
+  --sx-titlebar-inactive-text: #87878e;
+  --sx-window-border:          rgba(0,0,0,.6);
+}
+
+/* =============================================================
+   CLASSIC — the beveled X11/Motif heritage.
+   The hard-bevel kit is shared by all three retro themes; each then
+   sets only its own palette. The bevels are built from the --sx-bevel-*
+   light/shadow pair, so overriding the pair (NeXT, Onyx) re-renders them.
+   ============================================================= */
+[data-sx-theme='pewter'],
+[data-sx-theme='nextstep'],
+[data-sx-theme='onyx'] {
+  --sx-radius: 0px;
+  --sx-frame-width: 3px;
+
+  --sx-raised: inset  1px  1px 0 0 var(--sx-bevel-light),
+               inset -1px -1px 0 0 var(--sx-bevel-black),
+               inset  2px  2px 0 0 var(--sx-bevel-lightsoft),
+               inset -2px -2px 0 0 var(--sx-bevel-dark); /* @kind shadow */
+  --sx-sunken: inset  1px  1px 0 0 var(--sx-bevel-black),
+               inset -1px -1px 0 0 var(--sx-bevel-light),
+               inset  2px  2px 0 0 var(--sx-bevel-dark),
+               inset -2px -2px 0 0 var(--sx-bevel-lightsoft); /* @kind shadow */
+  --sx-pressed: inset 1px 1px 0 0 var(--sx-bevel-dark),
+                inset 2px 2px 0 0 var(--sx-bevel-shadow),
+                inset -1px -1px 0 0 var(--sx-bevel-lightsoft); /* @kind shadow */
+  --sx-raised-thin: inset  1px  1px 0 0 var(--sx-bevel-light),
+                    inset -1px -1px 0 0 var(--sx-bevel-dark); /* @kind shadow */
+  --sx-sunken-thin: inset  1px  1px 0 0 var(--sx-bevel-dark),
+                    inset -1px -1px 0 0 var(--sx-bevel-light); /* @kind shadow */
+  --sx-groove: inset  1px  1px 0 0 var(--sx-bevel-shadow),
+               inset -1px -1px 0 0 var(--sx-bevel-light),
+               inset  2px  2px 0 0 var(--sx-bevel-light),
+               inset -2px -2px 0 0 var(--sx-bevel-shadow); /* @kind shadow */
+  --sx-ridge:  inset  1px  1px 0 0 var(--sx-bevel-light),
+               inset -1px -1px 0 0 var(--sx-bevel-shadow),
+               inset  2px  2px 0 0 var(--sx-bevel-shadow),
+               inset -2px -2px 0 0 var(--sx-bevel-light); /* @kind shadow */
+  --sx-focus-outline: 1px dotted var(--sx-grey-900); /* @kind other */
+  --sx-shadow-window: 1.5px 1.5px 0 0 rgba(16,14,8,.55), 7px 9px 22px -4px rgba(16,14,8,.45);
+  --sx-shadow-popup:  2px 2px 0 0 rgba(16,14,8,.42), 4px 5px 10px -2px rgba(16,14,8,.30);
+  --sx-engrave: 0 1px 0 var(--sx-bevel-light); /* @kind shadow */
+  --sx-engrave-disabled: 1px 1px 0 var(--sx-bevel-light); /* @kind shadow */
+}
+
+/* ---------- Pewter: warm grey, blue chrome (the heritage default) ---------- */
+[data-sx-theme='pewter'] {
+  --sx-face:          var(--sx-grey-250);
+  --sx-face-raised:   var(--sx-grey-250);
+  --sx-face-sunken:   var(--sx-grey-200);
+  --sx-surface-bright:var(--sx-grey-0);
+  --sx-surface-desk:  #4f5a4a;
+  --sx-desktop-bg: linear-gradient(155deg, #828c73 0%, #5d6651 50%, #434b3a 100%); /* @kind other */
+
+  --sx-text:          var(--sx-grey-900);
+  --sx-text-soft:     var(--sx-grey-700);
+  --sx-text-muted:    var(--sx-grey-600);
+  --sx-text-disabled: var(--sx-grey-400);
+  --sx-text-on-bright:var(--sx-grey-900);
+
+  --sx-accent:        var(--sx-blue-500);
+  --sx-accent-strong: var(--sx-blue-700);
+  --sx-selection-bg:  var(--sx-blue-500);
+  --sx-focus-ring:    var(--sx-blue-500);
+
+  --sx-titlebar-active-from:   var(--sx-blue-500);
+  --sx-titlebar-active-to:     var(--sx-blue-700);
+  --sx-titlebar-active-text:   #ffffff;
+  --sx-titlebar-inactive-from: var(--sx-grey-300);
+  --sx-titlebar-inactive-to:   var(--sx-grey-400);
+  --sx-titlebar-inactive-text: var(--sx-grey-700);
+  --sx-window-border:          var(--sx-grey-700);
+}
+
+/* ---------- NeXTSTEP: cool medium grey, black title bars, crisp ---------- */
+[data-sx-theme='nextstep'] {
+  --sx-grey-250: #adadad;
+  --sx-grey-200: #bcbcbc;
+  --sx-grey-300: #9a9a9a;
+
+  --sx-face:         #adadad;
+  --sx-face-raised:  #adadad;
+  --sx-face-sunken:  #9c9c9c;
+  --sx-surface-bright:#ffffff;
+  --sx-surface-desk: #3a3a3c;
+  --sx-desktop-bg: linear-gradient(155deg, #5e626a 0%, #45474d 52%, #303236 100%); /* @kind other */
+
+  --sx-bevel-light:     #ffffff;
+  --sx-bevel-lightsoft: #d8d8d8;
+  --sx-bevel-shadow:    #7d7d7d;
+  --sx-bevel-dark:      #5a5a5a;
+  --sx-bevel-black:     #131313;
+
+  --sx-text:        #111111;
+  --sx-text-soft:   #2e2e2e;
+  --sx-text-muted:  #4f4f4f;
+  --sx-text-on-bright: #111111;
+
+  --sx-accent:       #3a3a3c;
+  --sx-selection-bg: #1c1c1e;
+  --sx-focus-ring:   #1c1c1e;
+
+  --sx-titlebar-active-from: #2b2b2d;
+  --sx-titlebar-active-to:   #050505;
+  --sx-titlebar-active-text: #ffffff;
+  --sx-titlebar-inactive-from: #9a9a9a;
+  --sx-titlebar-inactive-to:   #828282;
+  --sx-titlebar-inactive-text: #3a3a3a;
+  --sx-window-border:        #0c0c0c;
+}
+
+/* ---------- Onyx: warm dark, hard bevels ---------- */
+[data-sx-theme='onyx'] {
+  --sx-face:          #36332c;
+  --sx-face-raised:   #36332c;
+  --sx-face-sunken:   #242219;
+  --sx-surface-desk:  #16140f;
+  --sx-desktop-bg: linear-gradient(155deg, #2e2a20 0%, #1d1a12 56%, #14110a 100%); /* @kind other */
+  --sx-surface-bright:#1d1b15;
+
+  --sx-bevel-light:     #6a6456;
+  --sx-bevel-lightsoft: #514c40;
+  --sx-bevel-shadow:    #211f18;
+  --sx-bevel-dark:      #16140f;
+  --sx-bevel-black:     #000000;
+
+  --sx-text:           #ece7da;
+  --sx-text-soft:      #c2bcab;
+  --sx-text-muted:     #948d7b;
+  --sx-text-disabled:  #5f5a4c;
+  --sx-text-on-bright: #ece7da;
+
+  --sx-accent:        #6f93cf;
+  --sx-accent-strong: #4a78c8;
+  --sx-selection-bg:  #2f5aa6;
+  --sx-focus-ring:    #6f93cf;
+
+  --sx-titlebar-active-from: #2f5aa6;
+  --sx-titlebar-active-to:   #16284a;
+  --sx-titlebar-active-text: #ffffff;
+  --sx-titlebar-inactive-from: #423e35;
+  --sx-titlebar-inactive-to:   #2c2920;
+  --sx-titlebar-inactive-text: #948d7b;
+  --sx-window-border:        #000000;
+
+  --sx-engrave: 0 1px 0 rgba(0,0,0,.45); /* @kind shadow */
+  --sx-focus-outline: 1px dotted #ece7da; /* @kind other */
+}

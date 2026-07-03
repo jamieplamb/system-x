@@ -1,0 +1,198 @@
+/* The greeter (Plan 5c, D1/D8) -- the display-manager-style lock-screen that REPLACES the plain
+   login form. Pure LAYOUT here: every colour comes from the theme tokens via <html data-sx-theme/
+   accent> (brand default dark/blue, or the remembered user's look), so the greeter reskins for
+   free and stays in lockstep with the desktop. No hardcoded colours bar the unavoidable text
+   scrim over the gradient (mirrors the launcher's one allowed scrim). The auth form keeps its
+   contract (name=email/password, action=/login, "Sign in", @error); this file only styles the
+   chrome around it. Imported last in system-x.css. */
+
+/* The full-bleed backdrop: the theme's desktop gradient, the same one the desktop wallpaper
+   rides on (--sx-desktop-bg), so the lock-screen and the desktop behind it share one look. */
+.sx-greeter {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--sx-font-ui);
+  background: var(--sx-desktop-bg, linear-gradient(160deg, var(--sx-surface-desk), var(--sx-surface-desk)));
+}
+
+/* Top-left: the muted wordmark. currentColor tints the mark + the "system" word; the mono "-x"
+   echoes the brand. A soft text scrim keeps it legible over any gradient. */
+.sx-greeter-brand {
+  position: absolute;
+  top: var(--sx-space-6);
+  left: var(--sx-space-6);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sx-space-3);
+  color: #fff;
+  opacity: .7;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+.sx-greeter-mark {
+  flex: 0 0 auto;
+}
+.sx-greeter-wordmark {
+  font-size: var(--sx-text-md);
+  font-weight: var(--sx-weight-semibold);
+  letter-spacing: var(--sx-tracking-tight);
+}
+.sx-greeter-wordmark-x {
+  font-family: var(--sx-font-mono);
+  font-weight: var(--sx-weight-bold);
+}
+
+/* Upper-centre: the large mono clock + the date below it. White over the gradient with a scrim
+   (the one unavoidable scrim, like the launcher) -- the gradient is theme-driven, the text is
+   not part of the bevelled surface model. */
+.sx-greeter-time {
+  margin-top: 14vh;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+}
+.sx-greeter-clock {
+  font-family: var(--sx-font-mono);
+  font-size: 5.5rem;
+  font-weight: var(--sx-weight-bold);
+  line-height: 1;
+  letter-spacing: var(--sx-tracking-tight);
+}
+.sx-greeter-date {
+  margin-top: var(--sx-space-3);
+  font-size: var(--sx-text-md);
+  font-weight: var(--sx-weight-medium);
+  opacity: .85;
+}
+
+/* Centre: the bevelled login card -- a raised --sx-face panel on the theme radius, ~340px. The
+   surface + bevel + radius all come from tokens, so it matches a window chrome and reskins. */
+.sx-greeter-card {
+  width: 340px;
+  max-width: calc(100vw - var(--sx-space-7) * 2);
+  margin-top: 7vh;
+  padding: var(--sx-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sx-space-5);
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised), var(--sx-shadow-window);
+  border-radius: var(--sx-radius);
+}
+
+/* The remembered-user identity block: the initials avatar (accent fill, white text -- the same
+   accent the titlebar uses, which is always white-on-accent), "Welcome back", the bold name. */
+.sx-greeter-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sx-space-2);
+  text-align: center;
+}
+.sx-greeter-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--sx-space-2);
+  background: var(--sx-accent);
+  color: #fff;
+  font-size: var(--sx-text-lg);
+  font-weight: var(--sx-weight-bold);
+  letter-spacing: var(--sx-tracking-caps);
+  border-radius: var(--sx-radius);
+  box-shadow: var(--sx-raised);
+}
+.sx-greeter-welcome {
+  margin: 0;
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text-muted);
+  text-shadow: var(--sx-engrave);
+}
+.sx-greeter-name {
+  margin: 0;
+  font-size: var(--sx-text-md);
+  font-weight: var(--sx-weight-bold);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+}
+
+/* The form: a stack of labelled sunken fields + the accent submit. */
+.sx-greeter-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sx-space-4);
+}
+.sx-greeter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sx-space-2);
+}
+.sx-greeter-label {
+  font-size: var(--sx-text-xs);
+  font-weight: var(--sx-weight-medium);
+  letter-spacing: var(--sx-tracking-caps);
+  text-transform: uppercase;
+  color: var(--sx-text-soft);
+  text-shadow: var(--sx-engrave);
+}
+/* The fields reuse the widget .sx-textfield well (sunken bright surface). The greeter just makes
+   the wrapper full-width so the input fills the card. */
+.sx-greeter-field .sx-textfield {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* The validation error (the @error('email') slot) -- a muted alert above the fields. */
+.sx-greeter-error {
+  margin: 0;
+  padding: var(--sx-space-3) var(--sx-space-4);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-error);
+  background: color-mix(in srgb, var(--sx-error) 12%, transparent);
+  border-radius: var(--sx-radius);
+}
+
+/* The submit: a flat accent fill (the only call-to-action) -- white text on the accent, no
+   bevel, matching the design's flat-accent selection treatment. Overrides .sx-button's raised
+   face so the primary action reads as the accent, not just another grey button. */
+.sx-greeter-submit {
+  margin-top: var(--sx-space-2);
+  width: 100%;
+  color: #fff;
+  text-shadow: none;
+  background: var(--sx-accent);
+  box-shadow: var(--sx-raised);
+}
+.sx-greeter-submit:hover {
+  background: var(--sx-accent-strong);
+}
+.sx-greeter-submit:active {
+  box-shadow: var(--sx-pressed);
+}
+
+/* "Not you?" -- a quiet link under the card that resets to the blank brand state. */
+.sx-greeter-forget {
+  align-self: center;
+  font-size: var(--sx-text-xs);
+  color: var(--sx-text-muted);
+  text-decoration: none;
+}
+.sx-greeter-forget:hover {
+  color: var(--sx-text);
+  text-decoration: underline;
+}
+
+/* Bottom-right: the muted footer. */
+.sx-greeter-footer {
+  position: absolute;
+  right: var(--sx-space-6);
+  bottom: var(--sx-space-5);
+  font-size: var(--sx-text-xs);
+  color: #fff;
+  opacity: .55;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}

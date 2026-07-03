@@ -1,0 +1,1128 @@
+/* ============================================================
+   system-x — Richer widget class hooks
+   Styles the widgets the display server renders BEYOND the core
+   chrome that base.css owns: the text field, checkbox, list + rows,
+   and the stack layout container. Same contract as base.css -- one
+   stable class per widget, straight off the renderers
+   (resources/js/system-x/widgets/*.js) -- and the SAME token system,
+   so a theme override (data-sx-theme="pewter" etc.) reskins these for
+   free alongside the chrome. Imported AFTER base.css so it extends the
+   established token vocabulary (raised/sunken bevels, control heights,
+   engrave, spacing).
+
+   The visual language follows the design source (docs/design, kept as
+   the untouched reference): text field + checkbox box + list well are
+   SUNKEN (the inverse of a button), and a selected row is a FLAT accent
+   fill with white text (no bevel -- selection sits ON the surface, it
+   doesn't rise off it).
+   ============================================================ */
+
+/* ---------- Badge (.sx-badge) ----------
+   Inline status pill -- raised, tight, caps-case. The base class sets the shared
+   geometry; the --{tone} modifier swaps the bg/fg pair. No interaction contract.
+   The JSX prototype (docs/design/.../display/Badge.jsx) is the visual source of
+   truth: raised-thin bevel, 16px tall, sx-text-2xs caps, five named tones. */
+.sx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sx-space-2);
+  height: 16px;
+  padding: 0 var(--sx-space-3);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-2xs);
+  font-weight: var(--sx-weight-semibold);
+  letter-spacing: var(--sx-tracking-caps);
+  text-transform: uppercase;
+  box-shadow: var(--sx-raised-thin);
+}
+
+/* neutral -- sits on the standard face surface, muted text (no colour signal) */
+.sx-badge--neutral {
+  background: var(--sx-face);
+  color: var(--sx-text-soft);
+}
+
+/* info -- workstation blue tint */
+.sx-badge--info {
+  background: var(--sx-blue-100);
+  color: var(--sx-blue-700);
+}
+
+/* ok -- green tint */
+.sx-badge--ok {
+  background: var(--sx-green-100);
+  color: var(--sx-green-500);
+}
+
+/* warn -- amber tint */
+.sx-badge--warn {
+  background: var(--sx-amber-100);
+  color: var(--sx-amber-500);
+}
+
+/* error -- red tint */
+.sx-badge--error {
+  background: var(--sx-red-100);
+  color: var(--sx-red-500);
+}
+
+/* ---------- Separator (.sx-separator) ----------
+   Etched groove rule -- display-only, no interaction contract. Uses
+   var(--sx-groove) (a 2px inset bevel shadow) to match the prototype
+   (docs/design/.../display/Separator.jsx). Horizontal is full-width 2px;
+   vertical is full-height 2px -- suitable for use inside a .sx-box row. */
+.sx-separator {
+  box-shadow: var(--sx-groove);
+}
+
+.sx-separator--horizontal {
+  height: 2px;
+  width: 100%;
+}
+
+.sx-separator--vertical {
+  width: 2px;
+  align-self: stretch;
+}
+
+/* ---------- GroupBox (.sx-groupbox) ----------
+   Titled fieldset container -- an etched groove rectangle with a legend
+   notched into the top edge. Mirrors the prototype (docs/design/.../display/
+   GroupBox.jsx): groove bevel for the frame, legend sits on the face surface
+   with engraved-text styling, body provides padding for the child widgets.
+   Children reconcile into .sx-groupbox-body so the <legend> is never a
+   reconciled child slot (reconcilePositional matches by index). */
+.sx-groupbox {
+  position: relative;
+  margin: 0;
+  padding: var(--sx-space-6) var(--sx-space-5) var(--sx-space-5);
+  border: 0;
+  box-shadow: var(--sx-groove);
+  background: transparent;
+}
+
+.sx-groupbox-legend {
+  position: absolute;
+  top: -7px;
+  left: var(--sx-space-4);
+  padding: 0 var(--sx-space-3);
+  background: var(--sx-face);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-xs);
+  font-weight: var(--sx-weight-semibold);
+  color: var(--sx-text-soft);
+  text-shadow: var(--sx-engrave);
+}
+
+.sx-groupbox-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sx-gap);
+}
+
+/* ---------- ProgressBar (.sx-progressbar) ----------
+   A sunken well filled to the value% with the accent colour. Indeterminate mode
+   shows a sliding sweep animation (sx-progress-sweep is defined in base.css --
+   reused, NOT redeclared). An optional label + % readout sits above the track.
+   Visual source of truth: docs/design/.../feedback/ProgressBar.jsx. */
+.sx-progressbar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sx-space-2);
+  width: 100%;
+}
+
+/* Label row -- name left, percentage right, muted engraved caption */
+.sx-progressbar-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-xs);
+  color: var(--sx-text-muted);
+  text-shadow: var(--sx-engrave);
+}
+
+/* Sunken well that clips the fill */
+.sx-progressbar-track {
+  position: relative;
+  height: 12px;
+  background: var(--sx-face-sunken);
+  box-shadow: var(--sx-sunken);
+  border-radius: var(--sx-radius);
+  overflow: hidden;
+}
+
+/* Accent fill -- width set inline by the renderer */
+.sx-progressbar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--sx-accent);
+  border-radius: var(--sx-radius);
+  transition: width 0.2s ease;
+}
+
+/* Indeterminate sweep -- reuses @keyframes sx-progress-sweep from base.css */
+.sx-progressbar--indeterminate .sx-progressbar-fill {
+  width: 35%;
+  animation: sx-progress-sweep 1.1s ease-in-out infinite;
+  transition: none;
+}
+
+/* ---------- Stack (.sx-stack) ----------
+   Structural only: a vertical column that lays its children out on the
+   token gap rhythm. No surface, no bevel -- it inherits the content
+   area it sits in. */
+.sx-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sx-gap);
+}
+
+/* ---------- Box (.sx-box) ----------
+   Structural only: a horizontal ROW that lays its children out on the token
+   gap rhythm -- the complement to .sx-stack's column. No surface, no bevel. */
+.sx-box {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--sx-gap);
+}
+
+/* ---------- Toolbar (.sx-toolbar) ----------
+   A raised horizontal strip -- a styled CONTAINER (like Box, but with surface).
+   Children (Buttons, Separators, any widget) lay out inline on the token gap
+   rhythm; the raised bevel + face background give it the toolbar's lifted look. */
+.sx-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  box-shadow: var(--sx-raised);
+  border-radius: var(--sx-radius);
+  background: var(--sx-face);
+}
+
+/* ---------- Grid (.sx-grid) ----------
+   Structural only: a CSS grid laying children on the token gap rhythm. The column
+   count (grid-template-columns: repeat(N, 1fr)) is set inline by the renderer from
+   the columns prop -- a dynamic value, so it lives on the element, not in this rule. */
+.sx-grid {
+  display: grid;
+  gap: var(--sx-gap);
+}
+
+/* ---------- Text field (.sx-textfield > input) ----------
+   A sunken white well -- the canonical "type here" affordance, the
+   inverse bevel of a button. The wrapper carries the well (surface +
+   sunken bevel + height); the inner <input> is stripped bare and just
+   carries text. Focus is a dotted inset rectangle (Motif-style), not a
+   glow. */
+.sx-textfield {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--sx-control-h);
+  padding: 0 var(--sx-space-3);
+  background: var(--sx-surface-bright);
+  box-shadow: var(--sx-sunken);
+  border-radius: var(--sx-radius);
+}
+.sx-textfield input {
+  all: unset;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  line-height: var(--sx-control-h);
+  color: var(--sx-text-on-bright);
+}
+.sx-textfield input::placeholder {
+  color: var(--sx-text-muted);
+}
+.sx-textfield:focus-within {
+  outline: var(--sx-focus-outline);
+  outline-offset: -3px;
+}
+
+/* ---------- Checkbox (.sx-checkbox > input + .sx-checkbox-label) ----------
+   The renderer emits a <label.sx-checkbox> wrapping a real <input
+   type=checkbox> and a <span.sx-checkbox-label>. The native box is
+   hidden and replaced with a small sunken well that holds a check
+   glyph when on -- beveled inward so it reads as "set into" the
+   surface (the inverse of a button). The glyph is drawn as a CSS mask
+   so it inherits the engraved text colour and themes for free. */
+.sx-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sx-space-3);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Hide the native control but keep it in the layout flow so it stays
+   focusable/clickable and drives the :checked / :focus-visible states. */
+.sx-checkbox input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  background: var(--sx-surface-bright);
+  box-shadow: var(--sx-sunken);
+  border-radius: var(--sx-radius);
+  cursor: inherit;
+}
+
+/* The check glyph: a tick mask filled with the engraved text colour,
+   revealed only when the box is checked. */
+.sx-checkbox input::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--sx-text);
+  -webkit-mask: var(--sx-check-glyph) center / 11px 11px no-repeat;
+  mask: var(--sx-check-glyph) center / 11px 11px no-repeat;
+  opacity: 0;
+}
+.sx-checkbox input:checked::after {
+  opacity: 1;
+}
+.sx-checkbox input:focus-visible {
+  outline: var(--sx-focus-outline);
+  outline-offset: 1px;
+}
+
+.sx-checkbox-label {
+  line-height: var(--sx-leading-ui);
+}
+
+/* The tick path, kept as a token here next to the only consumer. Matches
+   the design source's Checkbox.jsx SVG (M1.5 5.5 L4 8 L9.5 2). */
+:root {
+  --sx-check-glyph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath d='M1.5 5.5L4 8L9.5 2' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ---------- Switch (.sx-switch > input + .sx-switch-track + .sx-switch-label) ----------
+   A pill-styled boolean toggle. The real <input type=checkbox> is visually hidden
+   (position absolute, zero size) but stays in the DOM: it stays focusable/clickable
+   and its :checked state drives the track fill + thumb position via sibling selectors.
+   The visible track is .sx-switch-track; the sliding thumb is its ::after pseudo.
+   Source of truth: docs/design/.../choice/Switch.jsx.
+
+   DOM order: label.sx-switch > input[type=checkbox] ~ span.sx-switch-track ~ span.sx-switch-label
+   The sibling combinator (input:checked ~ .sx-switch-track) works because input is
+   the first child and track is a direct sibling within the label. */
+.sx-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sx-space-4);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The real checkbox: visually hidden but in the flow (position absolute keeps it
+   clickable via the label wrapper; width/height 0 collapses it visually). */
+.sx-switch input[type=checkbox] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none; /* label forwards the click -- no double-fire */
+}
+
+/* The pill track -- a sunken well, 34x18px, matching the prototype exactly. */
+.sx-switch-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 18px;
+  border-radius: var(--sx-radius);
+  background: var(--sx-face-sunken);
+  box-shadow: var(--sx-sunken);
+  transition: background 0.12s ease;
+}
+
+/* The sliding thumb -- a raised square that rides in the track. */
+.sx-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--sx-radius);
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised);
+  transition: left 0.12s ease;
+}
+
+/* Checked state: accent track + thumb slides right. The input is a sibling
+   of .sx-switch-track inside .sx-switch, so the general sibling combinator works. */
+.sx-switch input[type=checkbox]:checked ~ .sx-switch-track {
+  background: var(--sx-accent);
+}
+.sx-switch input[type=checkbox]:checked ~ .sx-switch-track::after {
+  left: 17px;
+}
+
+/* Focus ring on the track (since the input is invisible, redirect focus cue here). */
+.sx-switch input[type=checkbox]:focus-visible ~ .sx-switch-track {
+  outline: var(--sx-focus-outline);
+  outline-offset: 1px;
+}
+
+.sx-switch-label {
+  line-height: var(--sx-leading-ui);
+}
+
+/* ---------- List (.sx-list) + rows (.sx-listitem) ----------
+   The list is a sunken white well of selectable rows. Rows are flat by
+   default; hover lifts them faintly; a selected row is a flat accent
+   fill with white text and NO bevel -- selection sits on the surface.
+
+   FLAG: the engine does not yet emit a per-row selection signal
+   (listitem.js stamps only .sx-listitem + data-sx-id + text; the central
+   registry stamps only data-sx-type / data-sx-key). The selected styling
+   below is keyed off aria-selected="true", [data-sx-selected="true"] and
+   .sx-listitem--selected so it lights up the moment the engine grows
+   selection -- no CSS change needed then. Styling it now is CSS-only and
+   changes nothing about the current DOM. */
+.sx-list {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: var(--sx-space-1);
+  background: var(--sx-surface-bright);
+  box-shadow: var(--sx-sunken);
+  border-radius: var(--sx-radius);
+  overflow-y: auto;
+}
+
+.sx-listitem {
+  display: flex;
+  align-items: center;
+  min-height: var(--sx-list-row-h);
+  padding: 0 var(--sx-space-3);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  line-height: var(--sx-list-row-h);
+  color: var(--sx-text-on-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  user-select: none;
+}
+.sx-listitem:hover {
+  background: color-mix(in srgb, var(--sx-accent) 14%, transparent);
+}
+
+/* Selected = flat accent fill, white text, no bevel. Hover must not
+   override the selected fill, so the selected rules win on specificity
+   and also pin the hover state. */
+.sx-listitem[aria-selected='true'],
+.sx-listitem[data-sx-selected='true'],
+.sx-listitem.sx-listitem--selected,
+.sx-listitem[aria-selected='true']:hover,
+.sx-listitem[data-sx-selected='true']:hover,
+.sx-listitem.sx-listitem--selected:hover {
+  color: var(--sx-selection-fg);
+  background: var(--sx-selection-bg);
+}
+
+/* ---------- Select (.sx-select > .sx-select-label + .sx-select-control) ----------
+   A raised field housing a native <select>, matching the prototype
+   (docs/design/.../controls/Select.jsx): inline-flex row, control-h tall, raised bevel,
+   face surface. The native <select> is stripped bare (all: unset) and fills the field;
+   a CSS ::after chevron sits on the right via a background SVG so no extra DOM is needed.
+   The wrapper is a <label> so clicking the label text opens the dropdown as expected.
+   data-sx-id is on the wrapper; data-sx-events is on the <select> only -- the dispatcher
+   resolves up to the wrapper via closest('[data-sx-id]'). */
+.sx-select {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sx-space-3);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sx-select-label {
+  line-height: var(--sx-leading-ui);
+  flex-shrink: 0;
+}
+
+/* The raised field that holds the native <select>. The ::after chevron is drawn
+   as a background image on a pseudo-element so the arrow stays purely decorative
+   (aria-hidden by construction -- no DOM node) and tracks the text colour token. */
+.sx-select-control {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  height: var(--sx-control-h);
+  min-width: 120px;
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised);
+  border-radius: var(--sx-radius);
+}
+
+/* Strip the native appearance; fill the field area with our font/size tokens;
+   add right padding to keep text clear of the chevron zone. */
+.sx-select-control select {
+  all: unset;
+  flex: 1 1 auto;
+  padding: 0 var(--sx-space-3);
+  padding-right: calc(var(--sx-control-h) + var(--sx-space-1));
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  line-height: var(--sx-control-h);
+  cursor: pointer;
+  /* Restore enough of the native select so the dropdown still opens */
+  appearance: auto;
+  -webkit-appearance: auto;
+  /* But hide the browser-default arrow so our ::after chevron is the only arrow */
+  background-image: none;
+}
+
+/* Chevron tab: a square raised zone on the right, same height as the field,
+   with a centred downward-pointing path. Matches the prototype's <span> tab but
+   implemented as ::after so the DOM stays clean. The chevron is drawn as a CSS
+   mask filled with the theme's muted text token (NOT a baked-in colour) -- the
+   mask uses the SVG's alpha/shape only, so the stroke colour in the data URI is
+   irrelevant. This is the same pattern the checkbox tick uses, so the arrow
+   reskins for free under every theme (e.g. the dark theme). */
+.sx-select-control::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sx-control-h);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background-color: var(--sx-text-muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 9 9'%3E%3Cpath d='M1.5 3L4.5 6L7.5 3' fill='none' stroke='%23000' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 9 9'%3E%3Cpath d='M1.5 3L4.5 6L7.5 3' fill='none' stroke='%23000' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center no-repeat;
+  box-shadow: var(--sx-raised);
+  border-radius: 0 var(--sx-radius) var(--sx-radius) 0;
+}
+
+.sx-select-control:focus-within {
+  outline: var(--sx-focus-outline);
+  outline-offset: -3px;
+}
+
+/* ============================================================
+   Appearance app (POLISH) -- a real settings panel, not a wall of buttons.
+   Scoped to [data-app='appearance'] so it ONLY touches this app: every other
+   surface keeps the plain vertical .sx-stack. The render is a column of
+   sections; each section = a heading Label (.sx-label) above an inner row
+   Stack (data-sx-id="appearance-{key}-row") that we flow HORIZONTALLY so the
+   options read as one wrapping row with clear section breaks between groups.
+   The data-sx-pref hook + the client-seeded pressed cue are untouched -- this
+   is layout + skin only. The accent options become colour swatches.
+   ============================================================ */
+
+/* Breathing room between the sections -- give the appearance app's .sx-content its own column
+   flex (it's a flex ITEM of the window; here it's also a flex CONTAINER) so the section gap
+   separates the four groups cleanly. */
+[data-app='appearance'] .sx-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sx-space-6);
+}
+
+/* Each section stack (heading over row): a tight gap so the heading hugs its row;
+   the bigger section gap above does the separating between groups. Stretch it so
+   the heading's hairline rule spans the panel width. */
+[data-app='appearance'] .sx-content > .sx-stack {
+  gap: var(--sx-space-3);
+  align-self: stretch;
+}
+
+/* The section heading -- a small engraved caps label that reads as a group title,
+   sitting on a hairline rule so the categories are visually distinct. */
+[data-app='appearance'] [data-sx-id$='-label'] {
+  font-size: var(--sx-text-xs);
+  font-weight: var(--sx-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sx-text-muted);
+  padding-bottom: var(--sx-space-2);
+  border-bottom: var(--sx-border-hair);
+  align-self: stretch;
+}
+
+/* The inner option ROW -- flow horizontal, wrap, tight gap. This is the whole
+   point of the restructure: 5-6 options sit side by side instead of stacking. */
+[data-app='appearance'] [data-sx-id$='-row'] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sx-space-3);
+}
+
+/* Pressed cue (shared by every option) -- the active option is client-seeded with
+   data-sx-pressed='true' (prefs.js). Show it as a sunken, accent-ringed press so
+   the current choice reads at a glance on the new horizontal layout. */
+[data-app='appearance'] [data-sx-pressed='true'] {
+  box-shadow: var(--sx-pressed);
+  outline: 2px solid var(--sx-accent);
+  outline-offset: -2px;
+}
+
+/* ---------- Accent options as colour swatches ----------
+   Each accent button becomes a small bevelled square painted in that accent's
+   OWN raw colour (sourced from tokens/accents.css -- the only place hardcoded
+   colours are allowed, since these ARE the colours being picked). The text label
+   is hidden but kept as the accessible/hover name via the swatch title; the
+   pressed swatch keeps the shared accent ring + a check, so the live choice shows. */
+[data-app='appearance'] [data-sx-pref^='accent:'] {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  font-size: 0;          /* hide the text label -- the colour IS the affordance */
+  color: transparent;
+  box-shadow: var(--sx-raised);
+}
+[data-app='appearance'] [data-sx-pref^='accent:']:active {
+  padding: 0;            /* keep swatches square on press (override the button nudge) */
+}
+
+/* The 6 accent colours, keyed off the pref hook -- mirrors tokens/accents.css.
+   These stay fixed under any theme: a swatch must show the accent it picks. */
+[data-app='appearance'] [data-sx-pref='accent:blue']     { background: #2f5aa6; }
+[data-app='appearance'] [data-sx-pref='accent:teal']     { background: #1f7a8c; }
+[data-app='appearance'] [data-sx-pref='accent:violet']   { background: #6b4fa0; }
+[data-app='appearance'] [data-sx-pref='accent:green']    { background: #2f7d3a; }
+[data-app='appearance'] [data-sx-pref='accent:amber']    { background: #b5751a; }
+[data-app='appearance'] [data-sx-pref='accent:graphite'] { background: #515761; }
+
+/* Hover lifts the swatch face slightly without losing the colour. */
+[data-app='appearance'] [data-sx-pref^='accent:']:hover {
+  filter: brightness(1.08);
+}
+
+/* ============================================================
+   Manage apps (POLISH) -- a tidy settings-row list, not a stacked
+   label-over-button column. Scoped to [data-app='apps'] only. The render
+   is a column of rows (data-sx-id="apps-row-{slug}"), each a title Label
+   (apps-label-{slug}) + a toggle Button (apps-toggle-{slug}); we flow each
+   row HORIZONTAL so the name sits left and its Install/Uninstall toggle
+   sits right, on one line, with a hairline between rows. The data-sx-app-
+   action hook + the client-seeded data-sx-installed state are untouched --
+   layout + skin only.
+   ============================================================ */
+[data-app='apps'] .sx-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Each app row: name left, toggle right, on one line, divided by a hairline. */
+[data-app='apps'] [data-sx-id^='apps-row-'] {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sx-space-4);
+  align-self: stretch;
+  padding: var(--sx-space-3) 0;
+  border-bottom: var(--sx-border-hair);
+}
+
+/* The app name takes the row's width so the toggle is pushed to the right edge. */
+[data-app='apps'] [data-sx-id^='apps-label-'] {
+  flex: 1 1 auto;
+  font-weight: var(--sx-weight-medium);
+}
+
+/* The toggle reads its state from the client-seeded data-sx-installed: an
+   installed app shows a quiet "Uninstall"; an uninstalled one an accent "Install"
+   so the actionable add stands out. (The label text itself is set by manage-apps.js.) */
+[data-app='apps'] [data-sx-id^='apps-toggle-'] {
+  flex: 0 0 auto;
+  min-width: 76px;
+}
+[data-app='apps'] [data-sx-id^='apps-toggle-'][data-sx-installed='false'] {
+  color: var(--sx-on-accent, #fff);
+  background: var(--sx-accent);
+}
+
+/* The selected accent swatch: the shared accent ring reads, plus a white check
+   centred on the swatch so the live pick is unmistakable on the colour field. */
+[data-app='appearance'] [data-sx-pref^='accent:'][data-sx-pressed='true'] {
+  box-shadow: var(--sx-pressed);
+}
+[data-app='appearance'] [data-sx-pref^='accent:'][data-sx-pressed='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  -webkit-mask: var(--sx-check-glyph) center / 14px 14px no-repeat;
+  mask: var(--sx-check-glyph) center / 14px 14px no-repeat;
+}
+/* ============================================================
+   Audit trail viewer ([data-app='audit'])
+   The Raw shell [data-sx-audit] is a scrollable column of rows;
+   each row has a heading line + indented change diffs.
+   ============================================================ */
+[data-app='audit'] .sx-audit { display:flex; flex-direction:column; gap:0; overflow:auto; height:100%; }
+[data-app='audit'] .sx-audit-row { padding:var(--sx-space-3) 0; border-bottom:var(--sx-border-hair); }
+[data-app='audit'] .sx-audit-row-head { font-weight:var(--sx-weight-medium); }
+[data-app='audit'] .sx-audit-change { padding-left:var(--sx-space-4); opacity:0.7; font-size:var(--sx-text-sm, 0.85em); }
+
+[data-app='appearance'] [data-sx-pref^='accent:'] {
+  position: relative;
+}
+
+/* ---------- RadioGroup (.sx-radiogroup > .sx-radiogroup-label + .sx-radio*) ----------
+   A group of inline radio buttons sharing one HTML name (= the widget id), bound to
+   a single value. ONE widget: the renderer builds N rows from options. The wrapper
+   carries data-sx-id; each inner <input type=radio> carries only data-sx-events so the
+   dispatcher resolves up to the wrapper and echoes the checked radio's value.
+
+   Source of truth: docs/design/.../choice/Radio.jsx.
+
+   Each row: label.sx-radio > input[type=radio] (hidden) ~ span.sx-radio-mark ~ span.sx-radio-label
+   The input is position:absolute / opacity:0 / zero-size -- hidden but fully focusable
+   and clickable (the label wrapper forwards the click). The :checked and :focus-visible
+   states drive the visible mark via general sibling combinators. The filled dot colour
+   uses var(--sx-text) matching the prototype exactly -- it's an engraved-colour token,
+   so it reskins for free under every theme (no hardcoded colour). */
+.sx-radiogroup {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sx-space-2);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  user-select: none;
+}
+
+.sx-radiogroup-label {
+  line-height: var(--sx-leading-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text-muted);
+}
+
+/* Each row: an inline flex row aligning the mark + label text. The <label> wrapper
+   is what makes clicking the text (or the mark) activate the hidden radio. */
+.sx-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sx-space-3);
+  cursor: pointer;
+}
+
+/* The real radio: visually hidden but in the click flow (position absolute keeps it
+   clickable via the label wrapper; width/height 0 collapses it visually).
+   pointer-events:none -- the label forwards the click, avoids double-fire. */
+.sx-radio input[type=radio] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* The circular sunken well -- 14x14, matching the Radio.jsx prototype exactly. */
+.sx-radio-mark {
+  position: relative;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--sx-surface-bright);
+  box-shadow: var(--sx-sunken);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The filled dot -- a 6x6 circle, centred in the well, revealed when checked.
+   Colour is var(--sx-text): engraved-colour token from the prototype, reskins with the
+   theme automatically (same as the checkbox tick). */
+.sx-radio-mark::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sx-text);
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+/* The input is the previous sibling of .sx-radio-mark inside .sx-radio, so
+   the general sibling combinator works here. */
+.sx-radio input[type=radio]:checked ~ .sx-radio-mark::after {
+  opacity: 1;
+}
+
+/* Focus ring on the mark (the input is invisible, so redirect the cue here). */
+.sx-radio input[type=radio]:focus-visible ~ .sx-radio-mark {
+  outline: var(--sx-focus-outline);
+  outline-offset: 1px;
+}
+
+.sx-radio-label {
+  line-height: var(--sx-leading-ui);
+}
+
+/* ---------- Slider (.sx-slider > .sx-slider-label + .sx-slider-control) ----------
+   A native <input type="range"> restyled with a sunken groove track and a raised
+   beveled thumb, matching docs/design/.../controls/Slider.jsx. The wrapper is a
+   <label> so clicking anywhere on it (label text, track) activates the range. The
+   wrapper carries data-sx-id; the range carries data-sx-events only -- the dispatcher
+   resolves up to the wrapper and echoes the value as a STRING.
+
+   Native `change` fires on release/commit (not during drag), so no drag-spam round-trips.
+
+   Track pseudo-elements are styled twice: webkit (Chrome/Safari) and moz (Firefox).
+   The thumb is 14x20 matching the prototype exactly. All colours use tokens. */
+.sx-slider {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sx-space-2);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  user-select: none;
+}
+
+.sx-slider-label {
+  line-height: var(--sx-leading-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text-muted);
+}
+
+.sx-slider-control {
+  /* Reset browser chrome entirely before applying our own. */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 180px;
+  height: var(--sx-control-h);
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  cursor: ew-resize;
+  outline: none;
+}
+
+/* Focus ring -- shown on keyboard navigation. Redirect to the control itself since
+   there is no separate visible element to host the ring (unlike checkbox/radio). */
+.sx-slider-control:focus-visible {
+  outline: var(--sx-focus-outline);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- webkit track (Chrome / Safari / Edge) --- */
+.sx-slider-control::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--sx-face-sunken);
+  box-shadow: var(--sx-sunken-thin);
+  border-radius: 1px;
+}
+
+/* --- webkit thumb --- */
+.sx-slider-control::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 20px;
+  margin-top: -7px; /* centre on the 6px track */
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised);
+  border: none;
+  border-radius: 1px;
+  cursor: ew-resize;
+}
+
+/* --- moz track (Firefox) --- */
+.sx-slider-control::-moz-range-track {
+  height: 6px;
+  background: var(--sx-face-sunken);
+  box-shadow: var(--sx-sunken-thin);
+  border-radius: 1px;
+  border: none;
+}
+
+/* --- moz thumb (Firefox) --- */
+.sx-slider-control::-moz-range-thumb {
+  width: 14px;
+  height: 20px;
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised);
+  border: none;
+  border-radius: 1px;
+  cursor: ew-resize;
+}
+
+/* ---------- Tabs (.sx-tabs > .sx-tabs-strip + .sx-tabs-body) ----------
+   Connected folder tabs: a row of rectangular tabs sitting on the panel's top edge. The
+   ACTIVE tab shares the panel's surface + accent text and MERGES into it -- its bottom edge
+   is painted the panel colour and the strip overlaps the panel border by 1px, so the tab and
+   panel read as one continuous shape. Inactive tabs rest recessed (muted) on the shared line.
+   The strip is a RadioGroup wearing a tab skin: one hidden-but-focusable radio per tab (same
+   accessible technique as RadioGroup/Switch) inside a .sx-tab <label>. Panels live in
+   .sx-tabs-body, shown one at a time (the renderer toggles [hidden]). All colours/borders
+   are tokens (hairline border + accent + face surfaces), so it tracks the theme. */
+.sx-tabs {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+}
+
+/* The strip overlaps the panel's top border by 1px so the active tab can bridge into it. */
+.sx-tabs-strip {
+  display: flex;
+  gap: var(--sx-space-1);
+  position: relative;
+  z-index: 1;
+  margin-bottom: -1px;
+}
+
+/* Each tab: a rectangular block with a hairline border + rounded top only (square bottom so
+   it sits flush on the panel line). Recessed + muted until active. The label wrapper forwards
+   the click to the hidden radio. */
+.sx-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  background: var(--sx-face-sunken);
+  border: var(--sx-border-hair);
+  border-radius: var(--sx-radius) var(--sx-radius) 0 0;
+  color: var(--sx-text-muted);
+  font-weight: var(--sx-weight-regular);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The real radio: visually hidden but focusable + clickable (same technique as RadioGroup). */
+.sx-tab input[type=radio] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+/* Active tab: shares the panel surface + accent semibold text, and MERGES into the panel --
+   its bottom border is painted the panel colour so it opens straight into the content. */
+.sx-tab:has(input:checked) {
+  background: var(--sx-face-raised);
+  border-bottom-color: var(--sx-face-raised);
+  color: var(--sx-accent);
+  font-weight: var(--sx-weight-semibold);
+}
+
+/* Focus cue redirected onto the tab (the input itself is invisible). */
+.sx-tab:has(input:focus-visible) {
+  outline: var(--sx-focus-outline);
+  outline-offset: -2px;
+}
+
+/* The panels host -- the content surface. Square top (the tabs sit flush on it), rounded
+   bottom, hairline framed. */
+.sx-tabs-body {
+  background: var(--sx-face-raised);
+  border: var(--sx-border-hair);
+  border-radius: 0 0 var(--sx-radius) var(--sx-radius);
+  padding: var(--sx-gutter);
+}
+
+/* Belt-and-braces: hidden panels are guaranteed gone (never rely on an implicit display). */
+.sx-tabs-body > [hidden] {
+  display: none;
+}
+
+/* ---------- Dialog (.sx-dialog > .sx-dialog-backdrop > .sx-dialog-panel) ---------- */
+
+/* The root takes no space when closed -- the renderer toggles the backdrop's presence, not
+   this wrapper's, so .sx-dialog itself must never participate in layout. */
+.sx-dialog { display: contents; }
+
+.sx-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10; /* local: above the app content, within this window only */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.sx-dialog-panel {
+  min-width: 280px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  background: var(--sx-face-raised);
+  border: var(--sx-border-hair);
+  border-radius: var(--sx-radius);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.sx-dialog-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sx-space-2) var(--sx-gutter);
+  border-bottom: var(--sx-border-hair);
+  font-weight: var(--sx-weight-semibold);
+}
+
+.sx-dialog-close {
+  border: 0;
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--sx-text-muted);
+  padding: 0 var(--sx-space-1);
+}
+.sx-dialog-close:hover { color: var(--sx-text); }
+
+.sx-dialog-body { padding: var(--sx-gutter); }
+
+/* The overlay z-tier. openOverlay() marks every portaled popup .sx-overlay but does NOT set
+   z-index inline (the CSSOM drops an inline var()); the z lives HERE so it resolves. Reused by
+   the menu popups now and 3c Tooltip later. Position (left/top/fixed) stays inline in _overlay.js. */
+.sx-overlay { z-index: var(--sx-z-overlay); }
+
+/* Menu popup (portaled to body; carries .sx-menu + .sx-overlay) */
+.sx-menu {
+    min-width: 160px;
+    padding: var(--sx-space-1) 0;
+    background: var(--sx-face-raised);
+    border: var(--sx-border-hair);
+    border-radius: var(--sx-radius);
+    box-shadow: var(--sx-shadow-popup);
+}
+.sx-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sx-space-3);
+    width: 100%;
+    height: var(--sx-menu-item-h);
+    padding: 0 var(--sx-space-3);
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--sx-text);
+    text-align: left;
+    cursor: pointer;
+}
+.sx-menu-item:hover:not(:disabled),
+.sx-menu-item:focus-visible { background: var(--sx-selection-bg); color: var(--sx-selection-fg); outline: none; }
+.sx-menu-item:disabled { color: var(--sx-text-muted); cursor: default; }
+.sx-menu-item-danger { color: var(--sx-error); } /* the theme error token -- a hardcoded red ignored dark themes */
+.sx-menu-item-accel { color: var(--sx-text-muted); font-variant-numeric: tabular-nums; }
+.sx-menu-item:hover:not(:disabled) .sx-menu-item-accel { color: inherit; }
+.sx-menu-divider { height: 1px; margin: var(--sx-space-1) 0; background: var(--sx-grey-500); }
+
+/* MenuBar strip (in-tree) */
+.sx-menubar { display: flex; align-items: stretch; height: var(--sx-menubar-h); }
+.sx-menubar-label {
+    display: flex; align-items: center;
+    padding: 0 var(--sx-space-3);
+    border: 0; background: transparent; font: inherit; color: var(--sx-text); cursor: pointer;
+}
+.sx-menubar-label:hover { background: var(--sx-selection-bg); color: var(--sx-selection-fg); }
+
+/* Tooltip -- a wrapper + a hint bubble revealed on hover/focus (pure CSS, no JS). The bubble is a
+   LOCAL absolutely-positioned element (not portaled); z-index just clears sibling content in this
+   window's stacking context -- NOT the global overlay tier (the bubble isn't body-mounted). */
+.sx-tooltip { position: relative; display: inline-flex; }
+
+.sx-tooltip-bubble {
+    position: absolute;
+    z-index: 1;
+    /* default positioning = the top side, so a hand-crafted wire node with an unknown data-side
+       still renders sanely (the PHP builder whitelists sides, but the wire is not the only door) */
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, -6px);
+    /* size to the text, not to the (tiny, button-sized) wrapper: an absolutely-positioned box with
+       no width shrinks to fit within its containing block minus the left:50% offset, forcing one
+       word per line. max-content sizes to the hint's natural width; max-width still caps long hints. */
+    width: max-content;
+    max-width: 220px;
+    padding: 3px 8px;
+    font-family: var(--sx-font-ui);
+    font-size: var(--sx-text-xs);
+    color: var(--sx-text);
+    text-shadow: var(--sx-engrave);
+    background: var(--sx-face);
+    box-shadow: var(--sx-raised), var(--sx-shadow-popup);
+    border-radius: var(--sx-radius);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.1s ease, visibility 0s linear 0.1s; /* hide: fade out, THEN flip hidden */
+}
+
+/* Reveal on hover OR keyboard focus. The transition-delay IS the ~0.4s show delay. On show,
+   visibility flips to visible immediately (0s, no delay) so the fade is seen. */
+.sx-tooltip:hover .sx-tooltip-bubble,
+.sx-tooltip:focus-within .sx-tooltip-bubble {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.1s ease 0.4s, visibility 0s;
+}
+
+/* Sides -- keyed off the wrapper's data-side (the renderer stamps it); 6px gap + translate centering */
+.sx-tooltip[data-side="top"]    .sx-tooltip-bubble { bottom: 100%; left: 50%; transform: translate(-50%, -6px); }
+.sx-tooltip[data-side="bottom"] .sx-tooltip-bubble { top: 100%; left: 50%; transform: translate(-50%, 6px); }
+.sx-tooltip[data-side="left"]   .sx-tooltip-bubble { right: 100%; top: 50%; transform: translate(-6px, -50%); }
+
+/* Toast (.sx-toast) -- fixed bottom-centre notification, body-mounted (toast.js). Carries
+   .sx-overlay for the z-tier (PH Task 6): a per-app handler-fault surfaces here without
+   tearing down the desktop. Same raised-popup language as .sx-menu (face-raised + hairline
+   + popup shadow), just anchored to the viewport instead of an anchor element. */
+.sx-toast {
+    position: fixed;
+    bottom: var(--sx-space-4);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 320px;
+    padding: var(--sx-space-2) var(--sx-gutter);
+    background: var(--sx-face-raised);
+    border: var(--sx-border-hair);
+    border-radius: var(--sx-radius);
+    box-shadow: var(--sx-shadow-popup);
+    color: var(--sx-text);
+    font-size: var(--sx-text-sm);
+}
+.sx-tooltip[data-side="right"]  .sx-tooltip-bubble { left: 100%; top: 50%; transform: translate(6px, -50%); }

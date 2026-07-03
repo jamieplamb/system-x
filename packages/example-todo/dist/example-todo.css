@@ -1,0 +1,20 @@
+/* Vendor styling for example/todo-app's custom gauge widget. Proves a third-party package can
+   ship CSS that reaches the browser via the vendor-asset seam. Uses the design tokens core exposes
+   so it themes consistently. The border-radius is a distinctive value the Dusk proof asserts. */
+.sx-example-gauge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--sx-accent, #3b82f6);
+    border-radius: 999px;
+    background: var(--sx-surface, #fff);
+    color: var(--sx-accent, #3b82f6);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sx-example-gauge:hover {
+    filter: brightness(0.97);
+}

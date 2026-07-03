@@ -1,0 +1,50 @@
+/* ============================================================
+   system-x — Typography
+   IBM Plex Sans for UI, IBM Plex Mono for system/numeric/code. The UI
+   is dense and crisp; sizes are small and deliberate (this is a
+   desktop, not a landing page). Text on grey carries a 1px white
+   highlight ("engraved" look) — the canonical Motif label treatment.
+   ============================================================ */
+
+:root {
+  /* Families */
+  --sx-font-ui:   'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --sx-font-mono: 'IBM Plex Mono', 'SF Mono', 'Consolas', monospace;
+
+  /* Type scale — UI-dense. px values; the desktop renders at 1:1 */
+  --sx-text-2xs: 10px;   /* tray clock, micro-labels */
+  --sx-text-xs:  11px;   /* secondary, captions, status bar */
+  --sx-text-sm:  12px;   /* default control + label text */
+  --sx-text-md:  13px;   /* body copy inside content areas */
+  --sx-text-lg:  15px;   /* section headings inside apps */
+  --sx-text-xl:  19px;   /* app/dialog headlines */
+  --sx-text-2xl: 26px;   /* hero / splash */
+
+  /* Weights */
+  --sx-weight-regular: 400;
+  --sx-weight-medium:  500;
+  --sx-weight-semibold:600;
+  --sx-weight-bold:    700;
+
+  /* Line + tracking */
+  --sx-leading-tight: 1.2;
+  --sx-leading-ui:    1.35;
+  --sx-leading-body:  1.55;
+  --sx-tracking-tight: -0.01em;
+  --sx-tracking-ui:    0.005em;
+  --sx-tracking-caps:  0.06em;   /* titlebars / small caps labels */
+
+  /* The engraved label highlight (light text-shadow on grey surfaces) */
+  --sx-engrave:        0 1px 0 var(--sx-bevel-light);
+  --sx-engrave-disabled: 1px 1px 0 var(--sx-bevel-light);
+}
+
+/* Convenience role classes — used by cards, kits, and the desktop shell.
+   (Components apply these via the CSS custom properties above.) */
+.sx-type-title    { font: var(--sx-weight-bold) var(--sx-text-sm)/var(--sx-leading-tight) var(--sx-font-ui);
+                    letter-spacing: var(--sx-tracking-caps); }
+.sx-type-label    { font: var(--sx-weight-medium) var(--sx-text-sm)/var(--sx-leading-ui) var(--sx-font-ui); }
+.sx-type-body     { font: var(--sx-weight-regular) var(--sx-text-md)/var(--sx-leading-body) var(--sx-font-ui); }
+.sx-type-mono     { font: var(--sx-weight-regular) var(--sx-text-sm)/var(--sx-leading-ui) var(--sx-font-mono); }
+.sx-type-heading  { font: var(--sx-weight-semibold) var(--sx-text-xl)/var(--sx-leading-tight) var(--sx-font-ui);
+                    letter-spacing: var(--sx-tracking-tight); }

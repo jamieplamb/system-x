@@ -1,0 +1,51 @@
+{
+    "name": "system-x/core",
+    "description": "An X11-style desktop framework for Laravel.",
+    "version": "1.0.0",
+    "keywords": [
+        "laravel",
+        "desktop",
+        "x11",
+        "ui",
+        "framework",
+        "reverb",
+        "websockets"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/jamieplamb/system-x",
+    "authors": [
+        {
+            "name": "Jamie Lamb"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/jamieplamb/system-x/issues",
+        "source": "https://github.com/jamieplamb/system-x"
+    },
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "illuminate/routing": "^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SystemX\\Core\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SystemX\\Core\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "SystemX\\Core\\SystemXServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}

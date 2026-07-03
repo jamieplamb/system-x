@@ -1,0 +1,180 @@
+/* The desktop panel (Plan 5b, D1; top/bottom toggle added in 5b-2, D6). Defaults to the
+   TOP edge (the .sx-panel rule below); the bottom-edge rule flips it off the data-sx-panel
+   attribute. Framework furniture: a launcher button, the running-window list, a tray with
+   the clock + logout. Token-driven (no hardcoded colours) so a theme reskins it. A high
+   fixed z so a z-raised window can't bury it. Ported from the design Panel.jsx (which
+   defaults to the bottom). The panel mounts on document.body (B4) -- its fixed bar covers
+   the panel edge above the work area and its clicks never reach the WM's #sx-desktop-scoped
+   listeners. */
+.sx-panel {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--sx-panel-h);
+  display: flex; align-items: center; gap: var(--sx-space-3);
+  padding: 0 var(--sx-space-3);
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised);
+  font-family: var(--sx-font-ui);
+  z-index: var(--sx-z-panel); /* above every window surface (mirrors the old logout ceiling) */
+}
+/* The panel edge flips by the panel-position attribute (Plan 5b-2, D6). Default is TOP
+   (the .sx-panel rule above sets top:0); a bottom panel moves to the bottom edge. The
+   HEIGHT is unchanged -- only the edge moves, so the WM's PANEL_H stays one constant. */
+[data-sx-panel='bottom'] .sx-panel {
+  top: auto;
+  bottom: 0;
+}
+.sx-panel-launcher {
+  display: inline-flex; align-items: center; gap: var(--sx-space-3);
+  height: var(--sx-control-h-lg); padding: 0 var(--sx-space-4);
+  background: var(--sx-face); box-shadow: var(--sx-raised);
+  color: var(--sx-text); text-shadow: var(--sx-engrave);
+  font-weight: var(--sx-weight-bold); font-size: var(--sx-text-sm);
+  letter-spacing: var(--sx-tracking-caps); cursor: pointer; user-select: none; border: 0;
+}
+.sx-panel-launcher:active { box-shadow: var(--sx-pressed); }
+.sx-panel-sep { width: 2px; align-self: stretch; margin: 5px 0; box-shadow: var(--sx-groove); }
+.sx-panel-windows { flex: 1 1 auto; display: flex; align-items: center; gap: var(--sx-space-2); overflow: hidden; }
+.sx-panel-window {
+  display: inline-flex; align-items: center; gap: var(--sx-space-3);
+  height: var(--sx-control-h); min-width: 96px; max-width: 168px; padding: 0 var(--sx-space-4);
+  background: var(--sx-face); box-shadow: var(--sx-raised);
+  color: var(--sx-text); text-shadow: var(--sx-engrave);
+  font-size: var(--sx-text-sm); cursor: pointer; user-select: none; border: 0;
+  overflow: hidden;
+}
+.sx-panel-window-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sx-panel-window[data-sx-active='true'] { box-shadow: var(--sx-pressed); font-weight: var(--sx-weight-semibold); }
+.sx-panel-window[data-sx-min='true'] { color: var(--sx-text-muted); font-style: italic; }
+.sx-panel-tray {
+  display: flex; align-items: center; gap: var(--sx-space-4);
+  height: var(--sx-control-h); padding: 0 var(--sx-space-4);
+  box-shadow: var(--sx-sunken-thin); color: var(--sx-text-soft);
+}
+.sx-panel-clock { font-family: var(--sx-font-mono); font-size: var(--sx-text-sm); color: var(--sx-text); }
+/* The tray user-menu button (plan system-menu, D4) -- the SystemMenu's anchor. A small bevelled
+   avatar showing the user's initials, or the user glyph when there's no name. Clicking it toggles
+   the dropdown (logout moved into that menu). */
+.sx-panel-user {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: var(--sx-control-h-sm); width: var(--sx-control-h-sm);
+  background: var(--sx-face); color: var(--sx-text);
+  box-shadow: var(--sx-raised); border-radius: var(--sx-radius);
+  cursor: pointer; user-select: none; border: 0; padding: 0;
+}
+.sx-panel-user:active { box-shadow: var(--sx-pressed); }
+.sx-panel-user-initials {
+  font-family: var(--sx-font-ui); font-size: var(--sx-text-xs);
+  font-weight: var(--sx-weight-semibold); letter-spacing: .02em;
+  text-shadow: var(--sx-engrave);
+}
+
+/* The launcher overlay (Plan 5b, D5) -- the app grid behind the panel's system-x button.
+   Ported from the design mockup's blurred command palette (ui_kits/desktop/index.html:367):
+   a full-bleed backdrop (blur + dim), a centred search box, and a 4-col AppIcon grid. Body-
+   mounted (B4) at --sx-z-launcher (S6 -- above the panel + the reconnect badge) so
+   the backdrop covers the whole desktop INCLUDING the panel button that opened it. Token-
+   driven (no hardcoded colours bar the backdrop scrim). */
+.sx-launcher {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 10vh;
+  background: rgba(18, 20, 26, .5);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  z-index: var(--sx-z-launcher); /* above the panel + the reconnect badge (S6) */
+}
+.sx-launcher[hidden] { display: none; }
+/* Centre the search box over the app grid -- the grid is the wider child, so without this
+   the narrower search left-aligns and reads off-centre against the tiles below it. */
+.sx-launcher-panel {
+  display: flex; flex-direction: column; align-items: center;
+}
+.sx-launcher-search {
+  display: flex; align-items: center; gap: var(--sx-space-3);
+  width: 300px; height: 32px; padding: 0 var(--sx-space-5);
+  background: var(--sx-surface-bright); box-shadow: var(--sx-sunken);
+  border-radius: var(--sx-radius); color: var(--sx-text-muted);
+}
+.sx-launcher-search-input {
+  all: unset; flex: 1 1 auto;
+  font-family: var(--sx-font-ui); font-size: var(--sx-text-sm);
+  color: var(--sx-text-on-bright);
+}
+.sx-launcher-grid {
+  display: grid; grid-template-columns: repeat(4, 88px); gap: var(--sx-space-6);
+  margin-top: var(--sx-space-7);
+}
+.sx-launcher-tile {
+  display: inline-flex; flex-direction: column; align-items: center; gap: var(--sx-space-3);
+  width: 76px; padding: var(--sx-space-3);
+  background: transparent; border: 0; cursor: pointer; user-select: none;
+  text-align: center;
+}
+.sx-launcher-tile-icon {
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--sx-face); box-shadow: var(--sx-raised); color: var(--sx-text);
+  border-radius: var(--sx-radius);
+}
+.sx-launcher-tile-label {
+  /* Wrap to two lines rather than truncate -- a longer title like "About system-x" shows
+     in full (the app's title() also feeds the titlebar + panel, so we don't shorten it). */
+  max-width: 100%; overflow: hidden; text-align: center;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  font-family: var(--sx-font-ui); font-size: var(--sx-text-xs); line-height: 1.25;
+  color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  padding: 1px var(--sx-space-2);
+}
+.sx-launcher-tile:hover .sx-launcher-tile-icon { box-shadow: var(--sx-pressed); }
+/* Drop-target cue (Slice 4a) -- during a drag, the tile the pointer is hovering ONTO (the group
+   gesture) gets a subtle accent ring so it's clear the drop will make/join a folder, not reorder. */
+.sx-launcher-tile-drop-target {
+  outline: 2px solid var(--sx-accent); outline-offset: 2px; border-radius: var(--sx-radius);
+}
+/* The empty-launcher hint (App-install plan, D7) -- shown in place of the grid when every user
+   app is uninstalled, pointing the user at Manage apps (never stuck). Spans the grid's columns. */
+.sx-launcher-empty {
+  grid-column: 1 / -1;
+  font-family: var(--sx-font-ui); font-size: var(--sx-text-sm); line-height: 1.4;
+  color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  text-align: center; padding: var(--sx-space-7) var(--sx-space-5); max-width: 320px;
+}
+
+/* Folder tile (Slice 4a) -- reuses the app-tile shell (.sx-launcher-tile) so it sits in the same
+   grid slot, but swaps the single glyph for a 2x2 mini-grid of its members' glyphs in the icon box. */
+.sx-launcher-folder-mini {
+  width: 40px; height: 40px;
+  display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr);
+  place-items: center; gap: 1px; padding: var(--sx-space-2);
+  background: var(--sx-face); box-shadow: var(--sx-raised); color: var(--sx-text);
+  border-radius: var(--sx-radius); box-sizing: border-box;
+}
+.sx-launcher-folder-mini-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.sx-launcher-folder:hover .sx-launcher-folder-mini { box-shadow: var(--sx-pressed); }
+
+/* The expanded folder shelf (Slice 4a) -- a full-width grid item dropped right after the open
+   folder's tile. macOS-style: it pushes the later tiles down. Its app tiles stay nested here (under
+   .sx-launcher-shelf), NEVER loose grid children, so the root-tile count is untouched. */
+.sx-launcher-shelf {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; gap: var(--sx-space-4);
+  padding: var(--sx-space-4) var(--sx-space-5);
+  background: var(--sx-face); box-shadow: var(--sx-sunken); border-radius: var(--sx-radius);
+  /* Expand animation -- CSS only, no JS. Cap the height so the transition has something to move. */
+  overflow: hidden; max-height: 480px; opacity: 1;
+  transition: max-height .18s ease, opacity .18s ease;
+}
+.sx-launcher-shelf-header {
+  display: flex; align-items: center;
+}
+.sx-launcher-shelf-name {
+  all: unset; width: 100%;
+  font-family: var(--sx-font-ui); font-size: var(--sx-text-sm);
+  color: var(--sx-text); background: transparent;
+  padding: var(--sx-space-2) 0;
+}
+.sx-launcher-shelf-tiles {
+  display: grid; grid-template-columns: repeat(4, 88px); gap: var(--sx-space-6);
+  justify-content: start;
+}

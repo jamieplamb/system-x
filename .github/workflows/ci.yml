@@ -1,0 +1,226 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to a PR cancels the superseded run (saves minutes, faster feedback). Keyed on the PR
+# head ref (falling back to the ref for pushes), and cancel-in-progress ONLY for PRs -- so a push to
+# main never cancels an in-flight main build (that gate must always finish).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pint:
+    name: Pint (code style)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+  php-host:
+    name: Host PHP tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, curl, xml, bcmath, pdo, sqlite3, pdo_sqlite
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      # phpunit.xml sets APP_ENV=testing + SQLite :memory:, but does NOT set APP_KEY, and a fresh
+      # runner has no .env -> the framework throws "No application encryption key has been specified"
+      # the moment the HTTP/session test bootstrap touches the encrypter. So create a .env + key
+      # UNCONDITIONALLY (do not leave this to CI triage). `.env.example` is tracked, so the cp is safe.
+      - name: Prepare app env + key
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Run host test suite
+        run: php artisan test
+
+  php-core:
+    name: Package PHP tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, curl, xml, bcmath
+          coverage: none
+      # The package is self-contained: its OWN composer install (testbench lives here), and we
+      # invoke its OWN phpunit binary directly -- NOT the root `composer test:core` script. This is
+      # also the "the package stands alone" proof that lets php-core transplant into the split
+      # mirror's CI later (sub-project 3).
+      - uses: ramsey/composer-install@v3
+        with:
+          working-directory: packages/system-x/core
+      - name: Run package test suite
+        run: packages/system-x/core/vendor/bin/phpunit -c packages/system-x/core/phpunit.xml
+
+  vitest:
+    name: Vitest (client renderers)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: packages/system-x/core/package-lock.json
+      - name: Install package deps
+        run: npm ci --prefix packages/system-x/core
+      - name: Run Vitest
+        run: npm --prefix packages/system-x/core run test
+
+  dist-freshness:
+    name: Build check (dist compiles)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: packages/system-x/core/package-lock.json
+      - name: Install package deps
+        run: npm ci --prefix packages/system-x/core
+      # DEFAULT: assert the build SUCCEEDS (catches source that does not compile). We do NOT diff the
+      # committed dist -- the local dist is built on darwin-arm64, CI runs linux-x64, and esbuild emits
+      # content-hashed woff2 filenames, so a byte diff is expected to fail and is NOT a real staleness
+      # signal. See the spec's dist-freshness section for the full rationale + the deferred "true
+      # staleness detection needs a same-platform build" note.
+      - name: Build the client bundle
+        run: npm --prefix packages/system-x/core run build
+
+  dusk:
+    name: Dusk (browser suite)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_DATABASE: system_x
+          MYSQL_USER: system_x
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, curl, xml, bcmath, pdo, pdo_mysql, mysqli
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+
+      # Chrome + a matching chromedriver. setup-chrome pins the browser; Dusk ships driver binaries
+      # and `--detect` picks the one matching the installed Chrome. DuskTestCase::driver() already
+      # sets --headless=new/--disable-gpu/--window-size and starts chromedriver on :9515, so we do
+      # NOT re-set those here.
+      - uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+      - name: Match chromedriver to Chrome
+        run: php artisan dusk:chrome-driver --detect
+
+      # Env bootstrap: Dusk's duskFile() reads APP_ENV from the booted framework (i.e. from .env),
+      # and .env is gitignored/absent on a fresh runner. So we MUST create .env from .env.dusk.ci
+      # (APP_ENV=ci) before anything boots -- then duskFile() resolves to .env.dusk.ci. A bare
+      # job-level env var is not enough.
+      - name: Bootstrap CI env
+        run: |
+          cp .env.dusk.ci .env
+          php artisan config:clear
+
+      - name: Migrate (fresh MySQL)
+        run: php artisan migrate --force
+
+      # Real Reverb so the synchronous broadcast on every widget-event POST lands instead of 500ing
+      # the suite. Backgrounded, then a readiness probe on :8080 -- if Reverb never binds, fail HERE
+      # with an obvious error instead of 10 minutes later as confusing 500s in the Dusk screenshots.
+      # nohup + log redirect so the process survives this step's shell exiting, and leaves an
+      # inspectable log (uploaded as an artifact) if it misbehaves.
+      - name: Start Reverb
+        run: |
+          nohup php artisan reverb:start --host=127.0.0.1 --port=8080 > reverb.log 2>&1 &
+          for i in $(seq 1 15); do
+            if nc -z 127.0.0.1 8080; then echo "reverb up"; exit 0; fi
+            sleep 1
+          done
+          echo "::error::Reverb never bound :8080"; cat reverb.log; exit 1
+
+      # PHP_CLI_SERVER_WORKERS: `php artisan serve` is single-process by default, but the desktop
+      # needs CONCURRENT request handling during the click -> synchronous-broadcast -> WebSocket
+      # dance (the Echo /broadcasting/auth subscribe races the ~500ms sync broadcast). One worker
+      # serializes them and the morph never lands -> every round-trip test times out. Locally this
+      # is a non-issue because Herd serves via multi-worker php-fpm; only `artisan serve` needs it.
+      - name: Serve the app
+        env:
+          PHP_CLI_SERVER_WORKERS: 10
+        run: |
+          nohup php artisan serve --host=127.0.0.1 --port=8000 > serve.log 2>&1 &
+          # Wait until the server answers before Dusk starts hitting it. HARD-FAIL if it never comes
+          # up (otherwise Dusk runs against a dead server and fails with opaque connection-refused).
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://127.0.0.1:8000/login; then echo "server up"; exit 0; fi
+            sleep 1
+          done
+          echo "::error::App server never came up on :8000"; cat serve.log; exit 1
+
+      # Harden + whole-suite retry: run once; on failure, run the WHOLE suite once more; the job is
+      # green if either run passes. NOT a 3x loop. Capture the first run's log for observability.
+      - name: Run Dusk (with one retry)
+        run: |
+          set +e
+          php artisan dusk 2>&1 | tee dusk-run-1.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::First Dusk run failed (status $status) -- retrying the whole suite once."
+            php artisan dusk 2>&1 | tee dusk-run-2.log
+            status=${PIPESTATUS[0]}
+          fi
+          exit $status
+
+      # Upload screenshots/console + both run logs regardless of outcome. Dusk purges screenshots/
+      # console at the START of each run, so this preserves a masked first-run failure for inspection.
+      - name: Upload Dusk artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dusk-artifacts
+          path: |
+            tests/Browser/screenshots
+            tests/Browser/console
+            dusk-run-1.log
+            dusk-run-2.log
+            reverb.log
+            serve.log
+          if-no-files-found: ignore
+          retention-days: 7

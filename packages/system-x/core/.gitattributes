@@ -1,0 +1,15 @@
+# The consumer runs the committed dist/ bundle, never the JS/CSS source or the build
+# toolchain. export-ignore keeps that dev cruft out of the published `git archive` tarball
+# (Composer's dist install). dist/, resources/views, resources/fonts, config/, src/,
+# routes/, database/, composer.json and LICENSE are NOT ignored -- they're needed at runtime.
+/tests              export-ignore
+/resources/js       export-ignore
+/resources/css      export-ignore
+/build.mjs          export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore
+/vitest.config.js   export-ignore
+/phpunit.xml        export-ignore
+/node_modules       export-ignore
+/.gitignore         export-ignore
+/.gitattributes     export-ignore

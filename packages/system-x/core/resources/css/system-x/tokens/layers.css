@@ -1,0 +1,10 @@
+/* The desktop stacking order in ONE authoritative place (was magic numbers scattered across
+   panel.css/surface.css/context-menu.css + launcher.js inline). Window surfaces keep their low
+   monotonic inline z (the WM's maxZ); these are the system-chrome + overlay tiers ABOVE them. */
+:root {
+  --sx-z-ghost: 99999;      /* the snap-preview ghost: above every window, below system chrome */
+  --sx-z-panel: 100000;     /* the desktop panel/taskbar */
+  --sx-z-badge: 100001;     /* the reconnecting badge */
+  --sx-z-launcher: 100002;  /* the launcher app-grid overlay */
+  --sx-z-overlay: 100003;   /* popup menus: context, system, and the new Menu widgets */
+}

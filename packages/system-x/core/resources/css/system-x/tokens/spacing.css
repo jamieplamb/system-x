@@ -1,0 +1,42 @@
+/* ============================================================
+   system-x — Spacing & sizing
+   A desktop is tight. The spacing scale is small-stepped and built on
+   a 2px base unit; control heights are fixed and chunky enough to hit.
+   ============================================================ */
+
+:root {
+  /* Base 2px step — desktop density */
+  --sx-space-0:  0px;
+  --sx-space-1:  2px;
+  --sx-space-2:  4px;
+  --sx-space-3:  6px;
+  --sx-space-4:  8px;
+  --sx-space-5:  12px;
+  --sx-space-6:  16px;
+  --sx-space-7:  20px;
+  --sx-space-8:  24px;
+  --sx-space-9:  32px;
+  --sx-space-10: 40px;
+
+  /* Control sizing — fixed, chunky, hittable */
+  --sx-control-h:      24px;   /* button / input height */
+  --sx-control-h-sm:   20px;
+  --sx-control-h-lg:   30px;
+  --sx-control-pad-x:  12px;
+  --sx-tap-min:        24px;   /* min interactive size */
+
+  /* Chrome dimensions */
+  --sx-titlebar-h:     24px;   /* window title bar */
+  --sx-titlebar-h-sm:  20px;
+  --sx-control-btn:    18px;   /* window control square (close/min/max) */
+  --sx-panel-h:        34px;   /* desktop panel / taskbar */
+  --sx-menubar-h:      24px;
+  --sx-scrollbar-w:    17px;   /* iconic chunky scrollbar */
+  --sx-menu-item-h:    22px;
+  --sx-list-row-h:     22px;
+
+  /* Content rhythm */
+  --sx-gutter:    12px;   /* default content-area padding */
+  --sx-gap:        8px;   /* default gap between widgets in a stack */
+  --sx-gap-tight:  4px;
+}

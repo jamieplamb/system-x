@@ -1,0 +1,80 @@
+/* The desktop right-click context menu (Plan 5b-2, D7). Body-mounted floating menu, ported
+   from the design ContextMenu.jsx inline styles -> tokens. Fixed, raised + popup shadow, a
+   high z (100003) so it sits ABOVE the panel (100000), the badge (100001), and the launcher
+   (100002). Token-driven (no hardcoded colours) so a theme reskins it. */
+.sx-context-menu {
+  position: fixed;
+  min-width: 168px;
+  padding: 3px;
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised), var(--sx-shadow-popup);
+  border-radius: var(--sx-radius);
+  font-family: var(--sx-font-ui);
+  z-index: var(--sx-z-overlay); /* above the panel, the badge, and the launcher */
+}
+
+.sx-context-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sx-space-4);
+  height: 24px;
+  padding: 0 9px;
+  border-radius: var(--sx-radius);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The design's hover: the selection fill + white text, no engrave (it inverts on highlight). */
+.sx-context-item:hover {
+  background: var(--sx-selection-bg);
+  color: #fff;
+  text-shadow: none;
+}
+
+.sx-context-item-icon {
+  width: 15px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sx-context-item-label {
+  flex: 1 1 auto;
+}
+
+.sx-context-sep {
+  height: 2px;
+  margin: 3px 2px;
+  box-shadow: var(--sx-groove);
+}
+
+/* The system menu (plan system-menu, D3) -- the user-icon dropdown in the panel tray. Reuses
+   the .sx-context-* item/sep styles; the container mirrors .sx-context-menu (fixed, the bevel,
+   z 100003) but is RIGHT-aligned to the tray button (the display server sets the inline
+   right/top|bottom per the panel edge). Token-driven so a theme reskins it. */
+.sx-system-menu {
+  position: fixed;
+  min-width: 168px;
+  padding: 3px;
+  background: var(--sx-face);
+  box-shadow: var(--sx-raised), var(--sx-shadow-popup);
+  border-radius: var(--sx-radius);
+  font-family: var(--sx-font-ui);
+  z-index: var(--sx-z-overlay); /* above the panel, the badge, and the launcher */
+}
+
+/* The name header -- a small non-interactive caption greeting the user. */
+.sx-system-menu-header {
+  padding: 5px 9px 6px;
+  margin-bottom: 2px;
+  font-size: var(--sx-text-sm);
+  font-weight: var(--sx-weight-semibold);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  box-shadow: var(--sx-groove);
+  user-select: none;
+  white-space: nowrap;
+}

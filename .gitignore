@@ -1,0 +1,44 @@
+/vendor
+/node_modules
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+/.phpunit.cache
+.DS_Store
+Thumbs.db
+*.log
+
+# Laravel runtime / build artifacts
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/auth.json
+/database/database.sqlite
+Homestead.json
+Homestead.yaml
+
+# editor / tooling
+/.idea
+/.vscode
+/.zed
+/.nova
+/.cursor/
+/.codex
+.phpactor.json
+_ide_helper.php
+
+# package dev artifacts (libraries don't ship vendor or lock)
+/packages/*/*/vendor
+/packages/*/*/composer.lock
+
+# brainstorming companion scratch
+
+# private working notes (do not ship)
+/docs/notes
+/.notes
+
+# Dusk local env (Reverb secrets)
+/.env.dusk.local

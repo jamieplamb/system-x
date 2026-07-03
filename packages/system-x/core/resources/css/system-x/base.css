@@ -1,0 +1,243 @@
+/* ============================================================
+   system-x — Base / framework class-hook stylesheet
+   This styles the REAL DOM contract the display server emits
+   (resources/js/system-x/renderers.js): one stable class per widget.
+   It IS the implementation reference — the engineering side ships
+   these rules. Everything is token-driven, so a theme override reskins
+   it for free. Consuming designs can use these classes directly.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- The root desktop ---------- */
+.sx-desktop {
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  background-color: var(--sx-surface-desk);
+  /* a soft per-theme gradient "wallpaper" with a faint stipple weave on top */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px),
+    var(--sx-desktop-bg, linear-gradient(160deg, var(--sx-surface-desk), var(--sx-surface-desk)));
+  background-attachment: fixed;
+}
+
+/* Wallpaper styles (Plan 5b-2, D2/D3) -- keyed off #sx-desktop[data-sx-wallpaper], they
+   compose with the THEME's --sx-desktop-bg (so a pewter grid still rides the pewter
+   gradient). Ported from the mockup's wallStyle (ui_kits/desktop/index.html:224-230).
+   'gradient' is the default (the bare background-image above); the attribute being absent
+   keeps today's look. The stipple weave (above) stays under all four. */
+.sx-desktop[data-sx-wallpaper='grid'] {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, .13) 1px, transparent 1.6px),
+    var(--sx-desktop-bg, linear-gradient(160deg, var(--sx-surface-desk), var(--sx-surface-desk)));
+  background-size: 18px 18px, cover;
+}
+
+.sx-desktop[data-sx-wallpaper='lines'] {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .06) 0 1px, transparent 1px 13px),
+    var(--sx-desktop-bg, linear-gradient(160deg, var(--sx-surface-desk), var(--sx-surface-desk)));
+  background-size: auto, cover;
+}
+
+.sx-desktop[data-sx-wallpaper='solid'] {
+  background-image: none; /* clear the gradient -- just --sx-surface-desk */
+}
+
+/* ---------- Window (.sx-window > .sx-titlebar + .sx-content) ---------- */
+.sx-window {
+  position: relative;
+  display: flex;             /* column: titlebar (fixed) + content (fills) -- so .sx-content */
+  flex-direction: column;    /* reaches the window bottom, e.g. a dialog backdrop covers it all */
+  background: var(--sx-face);
+  border-radius: var(--sx-radius);
+  overflow: hidden;
+  padding: var(--sx-frame-width);
+  box-shadow: var(--sx-raised), var(--sx-shadow-window);
+  font-family: var(--sx-font-ui);
+  color: var(--sx-text);
+}
+
+.sx-titlebar {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;            /* keep the titlebar's fixed height as a flex item in the column */
+  height: var(--sx-titlebar-h);
+  padding: 0 var(--sx-space-1) 0 var(--sx-space-4);
+  font-weight: var(--sx-weight-bold);
+  font-size: var(--sx-text-sm);
+  letter-spacing: var(--sx-tracking-caps);
+  color: var(--sx-titlebar-active-text);
+  background: linear-gradient(180deg, var(--sx-titlebar-active-from), var(--sx-titlebar-active-to));
+  box-shadow: var(--sx-raised-thin);
+  cursor: default;
+  user-select: none;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+  /* The titlebar is the drag handle (Plan 5a, D6): suppress touch panning/scrolling so a
+     touch-drag moves the window instead of scrolling the page. */
+  touch-action: none;
+}
+
+/* Inactive window — drops the colour, the single most important X11 cue. The cue now
+   lives on the WM-owned .sx-window-surface (Plan 5a, D3) so REAL focus drives it: the
+   morph never touches the surface, so a server frame can't reset focus. The titlebar
+   inside reads the surface's state via the descendant selector. */
+.sx-window-surface[data-sx-active='false'] .sx-window { box-shadow: var(--sx-raised), 3px 4px 12px -3px rgba(16,14,8,.35); }
+.sx-window-surface[data-sx-active='false'] .sx-titlebar {
+  color: var(--sx-titlebar-inactive-text);
+  background: linear-gradient(180deg, var(--sx-titlebar-inactive-from), var(--sx-titlebar-inactive-to));
+  text-shadow: var(--sx-engrave);
+}
+
+/* ---------- Framework-owned window chrome controls (Plan 5a, D5) ----------
+   The titlebar lays out a flex-grow title text span + a controls row (close +
+   maximise/restore). Beveled square buttons, crisp geometric glyph, press in on
+   :active. Close hovers RED (--sx-error); the others hover a soft grey. Tokens
+   only -- no hardcoded colours -- so data-sx-theme reskins them for free.
+   Identical on every window (chrome is sacred, injected by the renderer). */
+.sx-titlebar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sx-titlebar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sx-space-1);
+  flex: 0 0 auto;
+  margin-left: var(--sx-space-3);
+}
+
+.sx-window-control {
+  width: var(--sx-control-btn);
+  height: var(--sx-control-btn);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: 0 0 auto;
+  background: var(--sx-face);
+  color: var(--sx-text);
+  border: 0;
+  border-radius: var(--sx-radius);
+  box-shadow: var(--sx-raised);
+  cursor: pointer;
+}
+.sx-window-control:active { box-shadow: var(--sx-pressed); }
+/* The minimise control hovers a soft grey like the other non-close controls -- it inherits
+   .sx-window-control:hover below, so no separate rule is needed (only close overrides it). */
+.sx-window-control:hover { background: color-mix(in srgb, var(--sx-bevel-light) 30%, var(--sx-face)); }
+.sx-window-control-close:hover { background: var(--sx-error); color: #fff; }
+.sx-window-control:focus-visible { outline: var(--sx-focus-outline); outline-offset: 1px; }
+
+/* A minimised surface is hidden but STILL OPEN (Plan 5b, D4) -- display:none on the surface,
+   WM-owned (data-sx-min), the morph never touches it. The panel button (bring) un-hides it. */
+.sx-window-surface[data-sx-min='true'] { display: none; }
+
+.sx-content {
+  position: relative; /* positioning context for .sx-dialog-backdrop -- keeps a dialog scoped to its own window */
+  flex: 1 1 auto;     /* fill the window body below the titlebar (min-height:0 lets it shrink to scroll) */
+  min-height: 0;
+  overflow: auto;     /* V1-A: a declared-size window is height-capped (window.js) -- overflowing content scrolls here, not off-screen. The frame stays overflow:hidden. Safe for a shrink-wrap window (content fits = no scroll) and a maximised one (fills, scrolls only if it overflows the work area). */
+  background: var(--sx-face);
+  padding: var(--sx-gutter);
+  box-shadow: var(--sx-sunken-thin);
+  margin-top: var(--sx-space-1);
+}
+
+/* V1-A: a window-modal dialog's backdrop is inset:0 within .sx-content (widgets.css). Once the
+   content can scroll, inset:0 would cover only the visible box, leaving overflow below undimmed.
+   While a dialog is open, LOCK the content scroll so the backdrop covers everything -- and you
+   shouldn't scroll the background behind a modal anyway. `:has` is fine for the modern target. */
+.sx-content:has(.sx-dialog-backdrop) {
+  overflow: hidden !important;
+}
+
+/* ---------- Label (.sx-label) ---------- */
+.sx-label {
+  font-size: var(--sx-text-sm);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  line-height: var(--sx-leading-ui);
+}
+
+/* ---------- Button (.sx-button) ---------- */
+.sx-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sx-space-3);
+  min-height: var(--sx-control-h);
+  padding: 0 var(--sx-control-pad-x);
+  font-family: var(--sx-font-ui);
+  font-size: var(--sx-text-sm);
+  font-weight: var(--sx-weight-medium);
+  color: var(--sx-text);
+  text-shadow: var(--sx-engrave);
+  background: var(--sx-face);
+  border: 0;
+  border-radius: var(--sx-radius);
+  box-shadow: var(--sx-raised);
+  cursor: pointer;
+  user-select: none;
+}
+.sx-button:hover    { background: color-mix(in srgb, var(--sx-bevel-light) 16%, var(--sx-face)); }
+.sx-button:active   { box-shadow: var(--sx-pressed); padding-top: 1px; padding-left: calc(var(--sx-control-pad-x) + 1px); }
+.sx-button:focus-visible { outline: var(--sx-focus-outline); outline-offset: -4px; }
+.sx-button:disabled {
+  color: var(--sx-text-disabled);
+  text-shadow: var(--sx-engrave-disabled);
+  cursor: default;
+  box-shadow: var(--sx-raised);
+}
+
+/* ---------- Reconnecting badge (.sx-reconnecting) ---------- */
+.sx-reconnecting {
+  position: fixed;
+  right: var(--sx-space-5);
+  bottom: var(--sx-space-5); /* top panel now (Plan 5b, D7) -- no panel-h offset, the badge clears it at the bottom */
+  /* z-index lives in ONE authoritative place: surface.css sets it to 100001 (the badge tier
+     of the z-stack: surfaces < panel 100000 < badge 100001 < launcher 100002). Do NOT add a
+     z-index here too -- two rules on one selector is an @import-order trap that could silently
+     sink the badge under the panel. */
+  padding: var(--sx-space-3) var(--sx-space-5);
+  font-size: var(--sx-text-xs);
+  font-weight: var(--sx-weight-medium);
+  color: var(--sx-text);
+  background: var(--sx-amber-100);
+  box-shadow: var(--sx-raised), var(--sx-shadow-popup);
+}
+.sx-reconnecting::before {
+  content: ''; display: inline-block; width: 7px; height: 7px;
+  margin-right: var(--sx-space-3); background: var(--sx-warn);
+  box-shadow: var(--sx-sunken-thin);
+}
+/* The reconnect badge clears the panel's edge (Plan 5b-2, D6). Top panel -> badge bottom-
+   right (the base rule above); bottom panel -> badge top-right so it doesn't sit under the
+   panel that just moved to the bottom. */
+[data-sx-panel='bottom'] .sx-reconnecting {
+  top: var(--sx-space-5);
+  bottom: auto;
+}
+
+/* ---------- Display-server surface ---------- */
+#sx-surface { position: absolute; inset: 0; }
+
+/* ---------- Motion ---------- */
+@keyframes sx-progress-sweep { 0% { left: -35%; } 100% { left: 100%; } }
+/* Entrance animations move/scale only — never animate opacity from 0, so a
+   window is ALWAYS visible even if the animation doesn't composite (preview
+   engines, backgrounded tabs, export, reduced-motion). */
+@keyframes sx-win-in { from { transform: scale(0.97) translateY(4px); } to { transform: none; } }
+@keyframes sx-pop-in { from { transform: scale(0.96); } to { transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .sx-win-anim { animation: sx-win-in 0.16s ease-out; }
+  .sx-pop-anim { animation: sx-pop-in 0.12s ease-out; }
+}

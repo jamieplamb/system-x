@@ -1,0 +1,13 @@
+{
+    "name": "example/todo-app",
+    "description": "An example third-party system-x app package (a small todo). The canonical template for shipping a system-x app.",
+    "version": "0.1.0",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "system-x/core": "*"
+    },
+    "autoload": { "psr-4": { "Example\\TodoApp\\": "src/" } },
+    "extra": { "laravel": { "providers": [ "Example\\TodoApp\\TodoAppServiceProvider" ] } },
+    "minimum-stability": "stable"
+}

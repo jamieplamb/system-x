@@ -1,0 +1,190 @@
+/* ============================================================
+   system-x — Surface reconciliation (engineering glue)
+   base.css styles the desktop + widget class hooks the renderers emit.
+   This file is the THIN bridge between the design's assumed surface model
+   and our real boot DOM: the mount is #sx-desktop, and the boot paints one
+   .sx-window-surface div per window (D8 multi-surface).
+
+   Plan 5a: the WM owns layout now. Surfaces are ABSOLUTELY positioned and the
+   WM writes each one's transform (geometry) + z-index inline (D3/D6). The
+   desktop is the positioning context + the work-area bound. No flex stack.
+   ============================================================ */
+
+html, body { height: 100%; }
+body { margin: 0; }
+
+/* The mount carries .sx-desktop (the design's root). It is the positioning context
+   for the absolute surfaces + the full-bleed wallpaper backdrop. overflow:hidden
+   keeps a window clamped to the work area (no desktop scroll). */
+.sx-desktop {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Each per-window surface is the display server's morph target AND the WM's geometry
+   owner. It is absolutely positioned; the WM supplies the real offset via an inline
+   transform (NEVER left/top, D6). width:max-content makes the surface shrink-wrap its
+   .sx-window so an absolute div with no width can't collapse (and the titlebar stays
+   grabbable). will-change hints the compositor for the drag (Task 4). */
+.sx-window-surface {
+  position: absolute;
+  top: 0; left: 0;           /* the inline transform supplies the real offset (D6) */
+  width: max-content;        /* shrink-wrap the window so the surface never collapses */
+  will-change: transform;
+}
+
+/* Plan 5d (D3/B2): a resized surface is flagged data-sx-sized + given an explicit
+   width/height by the WM (resize()). The .sx-window inside FILLS it via this rule -- the
+   WM never writes width/height onto the .sx-window imperatively (N2 parity with maximise).
+
+   The !important is LOAD-BEARING, not cosmetic (B2): the renderer stamps an INLINE
+   style.width + style.height on the .sx-window as a CAP (window.js, around line 60). An inline
+   style beats a stylesheet rule regardless of specificity UNLESS !important -- so width:100%
+   and height:100% need it to win over the inline hint, so a resized window fills its surface
+   and can shrink below the declared height (the MIN_H floor is reachable). */
+.sx-window-surface[data-sx-sized='true'] > .sx-window {
+  width: 100% !important;        /* beat the inline style.width hint */
+  height: 100% !important;
+  min-height: 0 !important;      /* defensive: the renderer's inline height is beaten by height:100% !important above, so a resized window fills its surface + can shrink below the declared height */
+}
+
+/* Plan 5d (D7): when the surface is explicitly sized, the content scrolls rather than silently
+   clipping a window shrunk below its content (.sx-window stays overflow:hidden for the frame). */
+.sx-window-surface[data-sx-sized='true'] .sx-content {
+  overflow: auto;
+}
+
+/* Maximise/restore size the SURFACE only (Plan 5a, N2): the WM writes the work-area
+   width/height onto the surface and sets data-sx-max. The .sx-window inside then FILLS
+   its surface via this STANDING rule -- the WM NEVER writes width onto the .sx-window
+   imperatively, so the D3 boundary stays crisp (WM owns the surface, the morph owns the
+   .sx-window). !important beats the renderer's create()-time inline width AND height hints
+   (V1-A: the renderer now stamps style.height as a cap too, so height needs !important to fill).
+
+   This rule stays LAST in source order on purpose (Plan 5d, B3): a resized-THEN-maximised
+   window matches BOTH this rule and the [data-sx-sized] fill rule above (equal specificity on
+   .sx-window). Both are !important, so the equal-specificity tie resolves by source order --
+   keeping maximise last makes a maximised window render at WORK-AREA size, not its sized size. */
+.sx-window-surface[data-sx-max='true'] > .sx-window {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ============================================================
+   Plan 5d (D8/B4): the eight resize handles (renderer chrome).
+   window.js create() emits 8 inert <div data-sx-resize="..."> inside .sx-window
+   (siblings of the titlebar/content). The WM arms resize from a [data-sx-resize]
+   pointerdown (Task 4); here we only POSITION + CURSOR them.
+
+   They're transparent hit-areas: 4 thin edge strips + 4 corner squares, absolutely
+   positioned against .sx-window (which is position:relative). The handle thickness +
+   corner size are tokenised so a theme could retune the grab feel.
+   ============================================================ */
+:root {
+  --sx-resize-grip: 6px;    /* edge-strip thickness -- the outer frame that resizes */
+  --sx-resize-corner: 10px; /* corner-square size -- the diagonal grips */
+}
+
+.sx-resize-handle {
+  position: absolute;
+  /* B4: the handles are a thin outer frame UNDERNEATH the chrome. The titlebar + its
+     control buttons get a higher z-index below, so where a top handle would overlap them
+     the titlebar drag + the close button win the press. Keep the handles transparent --
+     they're hit-areas, not visible chrome (the SE grip below is the one subtle exception). */
+  z-index: 1;
+  touch-action: none;
+}
+
+/* The 4 EDGE strips. The N edge is a thin sliver at the very top; the E/W side strips
+   start BELOW the titlebar (top: var(--sx-titlebar-h)) so they never overlap the titlebar
+   grab zone or the control buttons (B4 -- the side frame only resizes below the chrome).
+   The S edge runs the full bottom. The corner squares (below) own the four corners. */
+.sx-resize-n {
+  top: 0; left: var(--sx-resize-corner); right: var(--sx-resize-corner);
+  height: var(--sx-resize-grip);
+  cursor: n-resize;
+}
+.sx-resize-s {
+  bottom: 0; left: var(--sx-resize-corner); right: var(--sx-resize-corner);
+  height: var(--sx-resize-grip);
+  cursor: s-resize;
+}
+.sx-resize-e {
+  top: var(--sx-titlebar-h); right: 0; bottom: var(--sx-resize-corner);
+  width: var(--sx-resize-grip);
+  cursor: e-resize;
+}
+.sx-resize-w {
+  top: var(--sx-titlebar-h); left: 0; bottom: var(--sx-resize-corner);
+  width: var(--sx-resize-grip);
+  cursor: w-resize;
+}
+
+/* The 4 CORNER squares. The top corners (NE/NW) are kept small (the corner size only) at
+   the very top edge so they sit clear of the control buttons -- with the chrome z-index
+   above them, the close button still wins where the NE square would overlap (B4). */
+.sx-resize-ne, .sx-resize-nw, .sx-resize-se, .sx-resize-sw {
+  width: var(--sx-resize-corner);
+  height: var(--sx-resize-corner);
+}
+.sx-resize-ne { top: 0; right: 0; cursor: ne-resize; }
+.sx-resize-nw { top: 0; left: 0; cursor: nw-resize; }
+.sx-resize-se { bottom: 0; right: 0; cursor: se-resize; }
+.sx-resize-sw { bottom: 0; left: 0; cursor: sw-resize; }
+
+/* A subtle visible grip on the SE corner (optional, token-driven) -- the conventional
+   "this resizes" affordance. Pure decoration over the same hit-area; everything else
+   stays an invisible frame. */
+.sx-resize-se {
+  background:
+    linear-gradient(135deg, transparent 55%, var(--sx-bevel-dark) 55%, var(--sx-bevel-dark) 62%,
+      transparent 62%, transparent 74%, var(--sx-bevel-dark) 74%, var(--sx-bevel-dark) 81%, transparent 81%);
+}
+
+/* B4 (the load-bearing hit-area fix): the titlebar grab zone + the control buttons sit
+   ABOVE the handles, so grabbing the titlebar DRAGS and grabbing the close button CLOSES
+   even where a top handle overlaps them. The handles are z-index:1; lift the chrome above. */
+.sx-titlebar { position: relative; z-index: 2; }
+.sx-titlebar-controls { position: relative; z-index: 3; }
+
+/* No resize affordance when maximised (D5): a maximised window is pinned to the work area,
+   so the handles are hidden (the WM also guards maybeStartResize on data-sx-max in Task 4). */
+.sx-window-surface[data-sx-max='true'] .sx-resize-handle { display: none; }
+
+/* The reconnecting badge is a SIBLING of the surfaces under .sx-desktop, so a z-raised
+   window would otherwise bury it. Lift it above every surface with a high fixed ceiling --
+   the WM's monotonic z stays well below this (S5) -- so the badge stays visible.
+
+   (Plan 5b, Task 7, D6: the old floating logout <form> + its z-ceiling are GONE -- logout
+   moved into the panel tray, killing the maximised-controls overlap. Only the badge ceiling
+   remains here.) */
+/* The SINGLE authoritative z-index for the badge -- base.css deliberately sets none. */
+.sx-reconnecting { z-index: var(--sx-z-badge); }
+
+/* ============================================================
+   Plan 5f (D2): the snap ghost-preview overlay. The WM body-mounts ONE .sx-snap-ghost div
+   (window-manager.js showSnapGhost) and previews the snap target rect mid-drag -- a translucent
+   tile shown while the pointer hovers an edge/corner zone, hidden on release.
+
+   z-index 99999 sits ABOVE every window surface (the WM's monotonic maxZ stays well below it,
+   like the badge ceiling) and BELOW the panel (100000) -- the panel still owns the top strip
+   while you snap. pointer-events:none so it NEVER intercepts the drag (the drag's pointer events
+   are captured to the surface anyway -- this is free insurance). Hidden by default ([hidden]).
+
+   The fill/border are TOKEN-DRIVEN -- the accent at a low alpha for the wash, a stronger accent
+   border -- matching the selection/launcher design language. Position is INSTANT (the ghost tracks
+   the pointer); only a quick opacity fade-in is transitioned, never left/top/width/height. */
+.sx-snap-ghost {
+  position: fixed;
+  z-index: var(--sx-z-ghost);
+  pointer-events: none;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--sx-accent) 22%, transparent);
+  border: 2px solid color-mix(in srgb, var(--sx-accent) 80%, transparent);
+  border-radius: var(--sx-radius);
+  transition: opacity 90ms ease-out;
+}
+
+.sx-snap-ghost[hidden] { display: none; }

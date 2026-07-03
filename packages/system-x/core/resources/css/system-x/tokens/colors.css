@@ -1,0 +1,87 @@
+/* ============================================================
+   system-x — Colour
+   Grey-forward. The grey ramp is the soul of the look; the bevel
+   light/shadow pair (in bevels.css) is derived from --sx-face.
+   Base scales first, then semantic aliases. A theme = override the
+   aliases (see themes.css).
+   ============================================================ */
+
+:root {
+  /* --- Warm neutral grey ramp (0 = white highlight → 900 = near-black) --- */
+  --sx-grey-0:   #ffffff;
+  --sx-grey-50:  #f6f4f0;
+  --sx-grey-100: #ece9e2;
+  --sx-grey-150: #e1ddd3;
+  --sx-grey-200: #d4cfc4;  /* light surface / raised face top */
+  --sx-grey-250: #c9c3b6;  /* THE face — windows, widgets, panel */
+  --sx-grey-300: #bbb4a4;
+  --sx-grey-400: #a09887;
+  --sx-grey-500: #837c6b;
+  --sx-grey-600: #625c4d;
+  --sx-grey-700: #463f33;
+  --sx-grey-800: #2c2820;
+  --sx-grey-900: #181610;
+
+  /* --- Workstation blue (active chrome + selection) --- */
+  --sx-blue-100: #d6e0f2;
+  --sx-blue-300: #6f93cf;
+  --sx-blue-500: #2f5aa6;  /* accent */
+  --sx-blue-600: #244a8d;
+  --sx-blue-700: #1a3a72;
+  --sx-blue-900: #102448;
+
+  /* --- Semantic hues (period-correct, slightly desaturated) --- */
+  --sx-red-500:    #a3271f;  /* error */
+  --sx-red-100:    #f0d4d1;
+  --sx-amber-500:  #b07d12;  /* warn */
+  --sx-amber-100:  #f1e3c4;
+  --sx-green-500:  #2f7d3a;  /* ok */
+  --sx-green-100:  #d2e6d4;
+
+  /* ============================================================
+     SEMANTIC ALIASES — components reference these, never the scale.
+     Override these per-theme to reskin the whole desktop.
+     ============================================================ */
+
+  /* Surfaces */
+  --sx-face:           var(--sx-grey-250);  /* the universal widget/window surface */
+  --sx-face-raised:    var(--sx-grey-250);
+  --sx-face-sunken:    var(--sx-grey-200);  /* inputs, wells, list bodies */
+  --sx-surface-desk:   #4f5a4a;             /* the root desktop backdrop (set in themes) */
+  --sx-surface-bright: var(--sx-grey-0);    /* text fields, paper */
+  --sx-overlay-veil:   color-mix(in srgb, var(--sx-grey-900) 38%, transparent);
+
+  /* Text — engraved against grey, so it carries a light shadow (see typography) */
+  --sx-text:           var(--sx-grey-900);
+  --sx-text-soft:      var(--sx-grey-700);
+  --sx-text-muted:     var(--sx-grey-600);
+  --sx-text-disabled:  var(--sx-grey-400);
+  --sx-text-on-accent: #ffffff;
+  --sx-text-on-bright: var(--sx-grey-900);
+  --sx-text-on-desk:   #eaeaee;   /* labels sitting directly on the (always-dark) desktop root */
+  --sx-text-link:      var(--sx-blue-600);
+
+  /* Accent / selection / focus */
+  --sx-accent:          var(--sx-blue-500);
+  --sx-accent-strong:   var(--sx-blue-700);
+  --sx-selection-bg:    var(--sx-blue-500);
+  --sx-selection-fg:    #ffffff;
+  --sx-focus-ring:      var(--sx-blue-500);
+
+  /* Window chrome — active vs inactive is critical to the X11 feel */
+  --sx-titlebar-active-from: var(--sx-blue-500);
+  --sx-titlebar-active-to:   var(--sx-blue-700);
+  --sx-titlebar-active-text: #ffffff;
+  --sx-titlebar-inactive-from: var(--sx-grey-300);
+  --sx-titlebar-inactive-to:   var(--sx-grey-400);
+  --sx-titlebar-inactive-text: var(--sx-grey-700);
+  --sx-window-border:        var(--sx-grey-700);
+
+  /* Semantic aliases */
+  --sx-error:   var(--sx-red-500);
+  --sx-warn:    var(--sx-amber-500);
+  --sx-ok:      var(--sx-green-500);
+  --sx-info:    var(--sx-blue-500);
+}
+
+::selection { background: var(--sx-selection-bg); color: var(--sx-selection-fg); }

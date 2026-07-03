@@ -1,0 +1,45 @@
+/* ============================================================
+   system-x — Accent options (user choice)
+   The accent is the ONE colour the user gets to pick. Set
+   data-sx-accent="…" on any element (independent of, and composable
+   with, data-sx-theme). It recolours selection, focus, default
+   buttons, and — on themes whose chrome is tinted — the active title
+   bar. Default (no attribute) is the workstation blue.
+   ============================================================ */
+
+[data-sx-accent='blue'] {
+  --sx-accent: #2f5aa6;  --sx-accent-strong: #1a3a72;
+  --sx-selection-bg: #2f5aa6;  --sx-focus-ring: #2f5aa6;
+  --sx-titlebar-active-from: #2f5aa6;  --sx-titlebar-active-to: #1a3a72;
+  --sx-titlebar-active-text: #ffffff;
+}
+[data-sx-accent='teal'] {
+  --sx-accent: #1f7a8c;  --sx-accent-strong: #115561;
+  --sx-selection-bg: #1f7a8c;  --sx-focus-ring: #1f7a8c;
+  --sx-titlebar-active-from: #1f7a8c;  --sx-titlebar-active-to: #114a54;
+  --sx-titlebar-active-text: #ffffff;
+}
+[data-sx-accent='violet'] {
+  --sx-accent: #6b4fa0;  --sx-accent-strong: #4a356f;
+  --sx-selection-bg: #6b4fa0;  --sx-focus-ring: #6b4fa0;
+  --sx-titlebar-active-from: #6b4fa0;  --sx-titlebar-active-to: #46326b;
+  --sx-titlebar-active-text: #ffffff;
+}
+[data-sx-accent='green'] {
+  --sx-accent: #2f7d3a;  --sx-accent-strong: #1d5526;
+  --sx-selection-bg: #2f7d3a;  --sx-focus-ring: #2f7d3a;
+  --sx-titlebar-active-from: #2f7d3a;  --sx-titlebar-active-to: #1d5526;
+  --sx-titlebar-active-text: #ffffff;
+}
+[data-sx-accent='amber'] {
+  --sx-accent: #b5751a;  --sx-accent-strong: #845210;
+  --sx-selection-bg: #b5751a;  --sx-focus-ring: #b5751a;
+  --sx-titlebar-active-from: #c08524;  --sx-titlebar-active-to: #8a560f;
+  --sx-titlebar-active-text: #ffffff;
+}
+[data-sx-accent='graphite'] {
+  --sx-accent: #515761;  --sx-accent-strong: #343941;
+  --sx-selection-bg: #515761;  --sx-focus-ring: #515761;
+  --sx-titlebar-active-from: #565c66;  --sx-titlebar-active-to: #343941;
+  --sx-titlebar-active-text: #ffffff;
+}
