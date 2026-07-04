@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DemoController;
 use App\Support\RememberedUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -13,6 +14,15 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'authenticate'])
         ->middleware('throttle:login');
+
+    // Live-demo provisioning endpoint (showcase plan). Registered ONLY when demo mode is on,
+    // so it 404s in a normal install. throttle:demo = 5 mints/min per IP (defined in
+    // AppServiceProvider). The CSRF token on the landing form forces a landing GET first.
+    if (config('system-x-demo.enabled')) {
+        Route::post('/demo/launch', [DemoController::class, 'launch'])
+            ->middleware('throttle:demo')
+            ->name('demo.launch');
+    }
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])

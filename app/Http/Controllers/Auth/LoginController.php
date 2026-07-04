@@ -23,6 +23,13 @@ class LoginController
     // authenticate()/logout() and the routes/throttle/gate stay byte-unchanged (D1).
     public function show(Request $request): View
     {
+        // Live-demo swap (showcase plan): when demo mode is on, the guest-facing entry is the
+        // landing page, not the credential greeter. The route + guest gate + /-to-/login bounce
+        // are all unchanged; only the returned view differs. Off => the original greeter path below.
+        if (config('system-x-demo.enabled')) {
+            return view('demo.landing');
+        }
+
         // "Not you?" (D4): ?forget=1 wipes the remember-cookie and renders the blank brand
         // state, so the machine is never stuck greeting one person. No new route -- this GET
         // already serves /login. Cookie::forget queues the deletion onto the response.

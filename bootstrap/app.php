@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\TouchDemoActivity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Live-demo activity tracking (showcase plan). Appended to the web group so it also runs
+        // on the package's system-x/* routes (web+auth). Internally a no-op unless demo mode is on
+        // and the user is an is_demo account, so appending unconditionally is safe.
+        $middleware->web(append: [
+            TouchDemoActivity::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

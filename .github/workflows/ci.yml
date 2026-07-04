@@ -196,17 +196,44 @@ jobs:
 
       # Harden + whole-suite retry: run once; on failure, run the WHOLE suite once more; the job is
       # green if either run passes. NOT a 3x loop. Capture the first run's log for observability.
+      #
+      # --exclude-group demo: the flag-OFF suite. DemoModeTest needs demo mode ON, which makes
+      # /login serve the demo landing instead of the credential form -- so it would break every
+      # other test's form login. It runs in its own flag-on step below.
       - name: Run Dusk (with one retry)
         run: |
           set +e
-          php artisan dusk 2>&1 | tee dusk-run-1.log
+          php artisan dusk --exclude-group demo 2>&1 | tee dusk-run-1.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             echo "::warning::First Dusk run failed (status $status) -- retrying the whole suite once."
-            php artisan dusk 2>&1 | tee dusk-run-2.log
+            php artisan dusk --exclude-group demo 2>&1 | tee dusk-run-2.log
             status=${PIPESTATUS[0]}
           fi
           exit $status
+
+      # The demo-mode proof runs SEPARATELY with the flag ON. Laravel's dotenv is immutable, so an
+      # env var already exported into a process wins over .env (copied from .env.dusk.ci, where the
+      # flag is absent) -- BUT that only helps a process booted in THIS shell. The flag-off app
+      # server from the earlier "Serve the app" step is a separate, already-running process that
+      # never sees this export, so it would still serve the credential form. So we STOP that server
+      # and boot a fresh one WITH SYSTEM_X_DEMO_MODE=true exported, on the same :8000 the browser
+      # dials (APP_URL in .env.dusk.ci). The export reaches both the served app AND the dusk test
+      # process here, so /login serves the demo landing. Reverb is untouched (still bound from its
+      # earlier step). Only DemoModeTest carries #[Group('demo')], so --group demo runs exactly it.
+      - name: Run Dusk (demo mode)
+        env:
+          PHP_CLI_SERVER_WORKERS: 10
+          SYSTEM_X_DEMO_MODE: true
+        run: |
+          # Replace the flag-off server with a flag-on one on the same port.
+          pkill -f "artisan serve" || true
+          nohup php artisan serve --host=127.0.0.1 --port=8000 > serve-demo.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null http://127.0.0.1:8000/login; then echo "demo server up"; break; fi
+            sleep 1
+          done
+          php artisan dusk --group demo 2>&1 | tee dusk-demo.log
 
       # Upload screenshots/console + both run logs regardless of outcome. Dusk purges screenshots/
       # console at the START of each run, so this preserves a masked first-run failure for inspection.
@@ -220,7 +247,9 @@ jobs:
             tests/Browser/console
             dusk-run-1.log
             dusk-run-2.log
+            dusk-demo.log
             reverb.log
             serve.log
+            serve-demo.log
           if-no-files-found: ignore
           retention-days: 7
