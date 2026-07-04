@@ -12,6 +12,10 @@ The result is a proper desktop in a browser tab: draggable windows, snap tiling,
 a panel with a launcher and a live clock, per-user theming, and durable state.
 Close the tab, come back tomorrow, and your desktop is where you left it.
 
+**[Try it live.](https://system-x-production-yoi3qf.laravel.cloud/)** The demo
+hands you a throwaway desktop of your own. Open some windows, drag them about,
+then reload the page. It all comes back.
+
 ## What's in this repo
 
 This is the project monorepo:
@@ -25,7 +29,9 @@ This is the project monorepo:
 The documentation lives at
 [jamieplamb.github.io/system-x-docs](https://jamieplamb.github.io/system-x-docs/),
 covering installation, building apps, adding widgets, shipping packages and the
-wire protocol. The reference host below is the best live tour.
+wire protocol. The reference host also runs the
+[live demo](https://system-x-production-yoi3qf.laravel.cloud/), so the demo is
+this repo running, not a mockup of it.
 
 ## Using it in your own app
 
