@@ -32,10 +32,12 @@ use SystemX\Core\Support\AssetRegistry;
 use SystemX\Core\Widgets\Badge;
 use SystemX\Core\Widgets\Box;
 use SystemX\Core\Widgets\Button;
+use SystemX\Core\Widgets\Chart;
 use SystemX\Core\Widgets\Checkbox;
 use SystemX\Core\Widgets\Dialog;
 use SystemX\Core\Widgets\Grid;
 use SystemX\Core\Widgets\GroupBox;
+use SystemX\Core\Widgets\Image;
 use SystemX\Core\Widgets\Label;
 use SystemX\Core\Widgets\ListItem;
 use SystemX\Core\Widgets\ListWidget;
@@ -95,6 +97,8 @@ class SystemXServiceProvider extends ServiceProvider
             $registry->register('raw', Raw::class);
             $registry->register('box', Box::class);
             $registry->register('grid', Grid::class);
+            $registry->register('image', Image::class);
+            $registry->register('chart', Chart::class);
 
             return $registry;
         });

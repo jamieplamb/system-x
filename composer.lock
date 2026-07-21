@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ab6866273260b6e931184959aee93e4",
+    "content-hash": "44c826699adffd592a985b038d3b4cc3",
     "packages": [
         {
             "name": "brick/math",
@@ -6834,11 +6834,11 @@
         },
         {
             "name": "system-x/core",
-            "version": "0.1.0",
+            "version": "1.0.1",
             "dist": {
                 "type": "path",
                 "url": "packages/system-x/core",
-                "reference": "40072bca668676dcde987758c204b0b4412b7c7a"
+                "reference": "c341a349a7b5ff16c0d8f1bf08a6b7a759a454b3"
             },
             "require": {
                 "illuminate/routing": "^13.0",
@@ -6874,8 +6874,8 @@
                     "name": "Jamie Lamb"
                 }
             ],
-            "description": "system-x core -- an X11-style desktop framework for Laravel.",
-            "homepage": "https://github.com/jamieplamb/system-x",
+            "description": "An X11-style desktop framework for Laravel.",
+            "homepage": "https://jamieplamb.github.io/system-x-docs/",
             "keywords": [
                 "desktop",
                 "framework",
@@ -6887,8 +6887,51 @@
             ],
             "support": {
                 "issues": "https://github.com/jamieplamb/system-x/issues",
-                "source": "https://github.com/jamieplamb/system-x"
+                "source": "https://github.com/jamieplamb/system-x",
+                "docs": "https://jamieplamb.github.io/system-x-docs/"
             },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "system-x/pro-datagrid",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/system-x/pro-datagrid",
+                "reference": "b2121675a965faf0566e26e4a79ba806e37fdedc"
+            },
+            "require": {
+                "php": "^8.3",
+                "system-x/core": "*"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "SystemX\\ProDataGrid\\DataGridServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SystemX\\ProDataGrid\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "SystemX\\ProDataGrid\\Tests\\": "tests/Php/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "A commercial, Eloquent-bound DataGrid widget for system-x.",
             "transport-options": {
                 "symlink": true,
                 "relative": true

@@ -24,6 +24,8 @@ import { menuButtonRenderer } from './widgets/menubutton.js';
 import { menuBarRenderer } from './widgets/menubar.js';
 import { tooltipRenderer } from './widgets/tooltip.js';
 import { rawRenderer } from './widgets/raw.js';
+import { imageRenderer } from './widgets/image.js';
+import { chartRenderer } from './widgets/chart.js';
 
 // Self-register the core widgets at import time -- BEFORE boot()'s first render,
 // the same timing rule as customElements.define() (D5). Pro packs register later
@@ -54,6 +56,8 @@ registry.register('menu', menuButtonRenderer);
 registry.register('menubar', menuBarRenderer);
 registry.register('tooltip', tooltipRenderer);
 registry.register('raw', rawRenderer);
+registry.register('image', imageRenderer);
+registry.register('chart', chartRenderer);
 
 // Back-compat shim so older imports of renderNode keep working. New code uses
 // registry.render directly.

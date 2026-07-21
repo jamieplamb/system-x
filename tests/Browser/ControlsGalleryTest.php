@@ -361,6 +361,97 @@ class ControlsGalleryTest extends DuskTestCase
         });
     }
 
+    // Task 7 (image widget plan): browser proof for the Image widget. Display-only, so no
+    // readout assertion -- switch to the Images category, assert the plain image renders,
+    // click the enlargeable image, assert the lightbox backdrop + big image appear, dismiss
+    // via Escape, assert it's gone.
+    public function test_image_renders_and_enlargeable_image_opens_and_dismisses_a_lightbox(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $this->loginAsDemoUser($browser)->waitFor('[data-window-id="hello"] .sx-window');
+            $this->openViaLauncher($browser, 'controls');
+            $browser->waitFor('[data-app="controls"] .sx-window')
+                ->waitFor('[data-sx-id="controls-readout"]');
+
+            $this->switchCategory($browser, 'images');
+
+            // Plain image renders -- no enlarge affordance.
+            $browser->waitFor('[data-sx-id="ctl-image-plain"]')
+                ->assertVisible('[data-sx-id="ctl-image-plain"].sx-image')
+                ->assertMissing('[data-sx-id="ctl-image-plain"].sx-image--enlargeable');
+
+            // Enlargeable image -- click it and the client-only lightbox opens.
+            $browser->assertVisible('[data-sx-id="ctl-image-enlarge"].sx-image--enlargeable')
+                ->click('[data-sx-id="ctl-image-enlarge"]')
+                ->waitFor('.sx-lightbox-backdrop')
+                ->assertVisible('.sx-lightbox-backdrop .sx-lightbox-img');
+
+            // Escape dismisses it.
+            $browser->script(<<<'JS'
+                document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            JS);
+            $browser->waitUntilMissing('.sx-lightbox-backdrop');
+
+            // Re-open, this time dismiss via a backdrop click (mousedown on the backdrop itself).
+            $browser->click('[data-sx-id="ctl-image-enlarge"]')
+                ->waitFor('.sx-lightbox-backdrop');
+            $browser->script(<<<'JS'
+                const b = document.querySelector('.sx-lightbox-backdrop');
+                b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            JS);
+            $browser->waitUntilMissing('.sx-lightbox-backdrop')
+                ->screenshot('controls-image-lightbox-dismissed');
+        });
+    }
+
+    // Chart widget plan (Task 8): browser proof for the hand-rolled SVG Chart. Switch to the
+    // Charts category, assert each of the three chart types (line/bar/area) renders an SVG
+    // with gridlines + its own series marks + a legend, then hover the line chart and assert
+    // the tooltip appears (and hides again on mouseout). Display-only -- nothing round-trips,
+    // so this follows the same visibility idiom as the Tooltip test: the tooltip node lives in
+    // the DOM the whole time, toggled hidden/visible via a CSS class, so assertMissing/waitFor
+    // read visibility rather than DOM presence.
+    public function test_charts_render_gridlines_and_series_and_tooltip_shows_on_hover(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $this->loginAsDemoUser($browser)->waitFor('[data-window-id="hello"] .sx-window');
+            $this->openViaLauncher($browser, 'controls');
+            $browser->waitFor('[data-app="controls"] .sx-window')
+                ->waitFor('[data-sx-id="controls-readout"]');
+
+            $this->switchCategory($browser, 'charts');
+            $browser->waitFor('[data-sx-id="chart-line"] svg');
+
+            // Every chart draws the shared frame (gridlines) plus its own series marks.
+            $browser->assertPresent('[data-sx-id="chart-line"] .sx-chart-gridline')
+                ->assertPresent('[data-sx-id="chart-line"] .sx-chart-line')
+                ->assertPresent('[data-sx-id="chart-bar"] .sx-chart-gridline')
+                ->assertPresent('[data-sx-id="chart-bar"] .sx-chart-bar')
+                ->assertPresent('[data-sx-id="chart-area"] .sx-chart-gridline')
+                ->assertPresent('[data-sx-id="chart-area"] .sx-chart-area');
+
+            // A legend row per series, on every chart.
+            $browser->assertSeeIn('[data-sx-id="chart-line"] .sx-chart-legend', 'Reads')
+                ->assertSeeIn('[data-sx-id="chart-line"] .sx-chart-legend', 'Faults')
+                ->screenshot('controls-charts-tab');
+
+            // park the pointer on a neutral element first (same idiom as the Tooltip test) so
+            // the initial "hidden" beat can't be flaked by the cursor already resting on a chart.
+            $browser->mouseover('[data-sx-id="controls-readout"]');
+            $browser->assertMissing('[data-sx-id="chart-line"] .sx-chart-tooltip');
+
+            // hover the line chart -> the tooltip reveals with the hovered category + both series.
+            $browser->mouseover('[data-sx-id="chart-line"]')
+                ->waitFor('[data-sx-id="chart-line"] .sx-chart-tooltip')
+                ->assertSeeIn('[data-sx-id="chart-line"] .sx-chart-tooltip', 'Reads')
+                ->assertSeeIn('[data-sx-id="chart-line"] .sx-chart-tooltip', 'Faults');
+
+            // move away -> the tooltip hides again.
+            $browser->mouseover('[data-sx-id="controls-readout"]')
+                ->waitUntilMissing('[data-sx-id="chart-line"] .sx-chart-tooltip');
+        });
+    }
+
     // Drive the launcher (copied from WmLaunchTest::openViaLauncher, which is private there):
     // click the panel's system-x button to open the overlay, wait for the app's tile, click it,
     // wait for the overlay to close. Body-mounted, so the trigger + tile live outside #sx-desktop.

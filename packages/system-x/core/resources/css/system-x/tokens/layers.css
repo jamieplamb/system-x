@@ -7,4 +7,5 @@
   --sx-z-badge: 100001;     /* the reconnecting badge */
   --sx-z-launcher: 100002;  /* the launcher app-grid overlay */
   --sx-z-overlay: 100003;   /* popup menus: context, system, and the new Menu widgets */
+  --sx-z-lightbox: 100004;  /* the Image enlarge lightbox: above menus/dialogs it may be opened over */
 }

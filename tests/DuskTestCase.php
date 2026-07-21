@@ -46,6 +46,17 @@ abstract class DuskTestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // CI headroom for the element wait. The shared GitHub runner renders a live-websocket
+        // desktop under heavy concurrent load, and Dusk's default 5s wait is too tight there --
+        // a transient CPU spike blows the wait and cascades across the whole suite (worst on the
+        // geometry-heavy drag/resize/snap tests), even though every method is deterministically
+        // green locally and on main. Widen the wait ONLY in CI (APP_ENV=ci) so the local suite
+        // still fails fast at 5s. This changes nothing a test proves -- a passing test still
+        // resolves its selector in well under a second; only a genuinely stalled one waits longer.
+        if (app()->environment('ci')) {
+            Browser::$waitSeconds = 15;
+        }
+
         if (Schema::hasTable('system_x_window_states')) {
             DB::table('system_x_window_states')->truncate();
         }

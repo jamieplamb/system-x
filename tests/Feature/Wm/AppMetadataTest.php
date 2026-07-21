@@ -54,7 +54,8 @@ class AppMetadataTest extends TestCase
 
         // hello + notes + appearance + about + apps + audit are registered (core); each carries slug + title + icon.
         // example.todo is a third-party package app auto-discovered into the same registry (see ThirdPartyAppTest).
-        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo'], $meta->pluck('slug')->all());
+        // sxpro.demo is the pro-datagrid demo app, registered only in local/testing (its provider's env guard).
+        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo', 'sxpro.demo'], $meta->pluck('slug')->all());
         $hello = $meta->firstWhere('slug', 'hello');
         $this->assertSame('Hello', $hello['title']);
         $this->assertArrayHasKey('icon', $hello);

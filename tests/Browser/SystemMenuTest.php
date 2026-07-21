@@ -56,11 +56,13 @@ class SystemMenuTest extends DuskTestCase
                 ->assertPresent('[data-sx-launch="controls"]')
                 // The third-party example.todo app auto-appears here too -- it's a user app.
                 ->assertPresent('[data-sx-launch="example.todo"]')
+                // The pro-datagrid demo (Cameras) is a user app too, registered in dev/test/CI.
+                ->assertPresent('[data-sx-launch="sxpro.demo"]')
                 // The SYSTEM apps are NOT in the grid -- they live in the user menu instead.
                 ->assertMissing('[data-sx-launch="appearance"]')
                 ->assertMissing('[data-sx-launch="about"]')
-                // Exactly four tiles -- Hello + Notes + Controls + example.todo, nothing else.
-                ->assertScript("return document.querySelectorAll('.sx-launcher-grid [data-sx-launch]').length", 4);
+                // Exactly five tiles -- Hello + Notes + Controls + example.todo + sxpro.demo.
+                ->assertScript("return document.querySelectorAll('.sx-launcher-grid [data-sx-launch]').length", 5);
         });
     }
 }

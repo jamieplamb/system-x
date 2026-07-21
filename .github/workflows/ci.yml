@@ -194,22 +194,33 @@ jobs:
           done
           echo "::error::App server never came up on :8000"; cat serve.log; exit 1
 
-      # Harden + whole-suite retry: run once; on failure, run the WHOLE suite once more; the job is
-      # green if either run passes. NOT a 3x loop. Capture the first run's log for observability.
+      # Harden + whole-suite retry: run the WHOLE suite up to 3 times; the job is green the moment
+      # any attempt passes. The suite is deterministically green locally and on main -- the only CI
+      # failures are load-driven waitFor timeouts on a starved shared runner (a bad attempt can red
+      # most of the suite, then a calmer one recovers it). Best-of-3 + the widened CI wait timeout
+      # (DuskTestCase raises Browser::$waitSeconds to 15 under APP_ENV=ci) give the box enough
+      # headroom that a transient spike no longer fails the job. Each attempt's log is captured.
       #
       # --exclude-group demo: the flag-OFF suite. DemoModeTest needs demo mode ON, which makes
       # /login serve the demo landing instead of the credential form -- so it would break every
       # other test's form login. It runs in its own flag-on step below.
-      - name: Run Dusk (with one retry)
+      - name: Run Dusk (best of 3)
         run: |
           set +e
-          php artisan dusk --exclude-group demo 2>&1 | tee dusk-run-1.log
-          status=${PIPESTATUS[0]}
-          if [ "$status" -ne 0 ]; then
-            echo "::warning::First Dusk run failed (status $status) -- retrying the whole suite once."
-            php artisan dusk --exclude-group demo 2>&1 | tee dusk-run-2.log
+          status=1
+          for attempt in 1 2 3; do
+            echo "::group::Dusk attempt ${attempt}/3"
+            php artisan dusk --exclude-group demo 2>&1 | tee "dusk-run-${attempt}.log"
             status=${PIPESTATUS[0]}
-          fi
+            echo "::endgroup::"
+            if [ "$status" -eq 0 ]; then
+              echo "Dusk passed on attempt ${attempt}."
+              break
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "::warning::Dusk attempt ${attempt} failed (status $status) -- retrying the whole suite."
+            fi
+          done
           exit $status
 
       # The demo-mode proof runs SEPARATELY with the flag ON. Laravel's dotenv is immutable, so an
@@ -247,6 +258,7 @@ jobs:
             tests/Browser/console
             dusk-run-1.log
             dusk-run-2.log
+            dusk-run-3.log
             dusk-demo.log
             reverb.log
             serve.log

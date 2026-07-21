@@ -15,7 +15,8 @@
         "laravel/reverb": "^1.0",
         "laravel/tinker": "^3.0",
         "system-x/core": "*",
-        "example/todo-app": "*"
+        "example/todo-app": "*",
+        "system-x/pro-datagrid": "*"
     },
     "repositories": [
         {
@@ -28,6 +29,13 @@
         {
             "type": "path",
             "url": "packages/example-todo",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/system-x/pro-datagrid",
             "options": {
                 "symlink": true
             }

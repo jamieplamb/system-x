@@ -6,10 +6,12 @@ use PHPUnit\Framework\TestCase;
 use SystemX\Core\Widgets\Badge;
 use SystemX\Core\Widgets\Box;
 use SystemX\Core\Widgets\Button;
+use SystemX\Core\Widgets\Chart;
 use SystemX\Core\Widgets\Checkbox;
 use SystemX\Core\Widgets\Dialog;
 use SystemX\Core\Widgets\Grid;
 use SystemX\Core\Widgets\GroupBox;
+use SystemX\Core\Widgets\Image;
 use SystemX\Core\Widgets\Label;
 use SystemX\Core\Widgets\ListItem;
 use SystemX\Core\Widgets\ListWidget;
@@ -411,5 +413,58 @@ class WidgetSerializationTest extends TestCase
         // render the bubble on top of the wrapped child -- fail loudly at build time instead.
         $this->expectException(\InvalidArgumentException::class);
         Tooltip::make('hint')->side('diagonal');
+    }
+
+    public function test_chart_serializes_type_categories_series_height(): void
+    {
+        $node = Chart::make()->bar()
+            ->categories(['09:00', '10:00'])
+            ->series('Reads', [12, 15])
+            ->series('Faults', [1, 0])
+            ->height(240);
+
+        $this->assertSame('chart', $node->type);
+        $this->assertSame('bar', $node->props['type']);
+        $this->assertSame(['09:00', '10:00'], $node->props['categories']);
+        $this->assertSame(
+            [['label' => 'Reads', 'data' => [12, 15]], ['label' => 'Faults', 'data' => [1, 0]]],
+            $node->props['series'],
+        );
+        $this->assertSame(240, $node->props['height']);
+    }
+
+    public function test_chart_defaults_line_type_and_height(): void
+    {
+        $node = Chart::make();
+        $this->assertSame('line', $node->props['type']);
+        $this->assertSame(220, $node->props['height']);
+        $this->assertSame([], $node->props['categories']);
+        $this->assertSame([], $node->props['series']);
+    }
+
+    public function test_chart_type_setters_are_exclusive_last_wins(): void
+    {
+        $this->assertSame('area', Chart::make()->bar()->area()->props['type']);
+    }
+
+    public function test_image_serializes_src_and_alt(): void
+    {
+        $result = (new Serializer)->serialize(Image::make('https://x/plate.jpg')->alt('Plate'));
+
+        $this->assertSame('image', $result['type']);
+        $this->assertSame('https://x/plate.jpg', $result['props']['src']);
+        $this->assertSame('Plate', $result['props']['alt']);
+        $this->assertArrayNotHasKey('enlarge', $result['props']); // omitted when not enlargeable
+    }
+
+    public function test_image_enlargeable_sets_flag_and_optional_full(): void
+    {
+        $plain = (new Serializer)->serialize(Image::make('a.jpg')->enlargeable());
+        $this->assertTrue($plain['props']['enlarge']);
+        $this->assertArrayNotHasKey('full', $plain['props']); // full omitted when null -> lightbox uses src
+
+        $withFull = (new Serializer)->serialize(Image::make('thumb.jpg')->enlargeable('full.jpg'));
+        $this->assertTrue($withFull['props']['enlarge']);
+        $this->assertSame('full.jpg', $withFull['props']['full']);
     }
 }

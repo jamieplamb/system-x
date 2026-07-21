@@ -7,8 +7,10 @@ use SystemX\Core\Runtime\WidgetEvent;
 use SystemX\Core\Widgets\Badge;
 use SystemX\Core\Widgets\Box;
 use SystemX\Core\Widgets\Button;
+use SystemX\Core\Widgets\Chart;
 use SystemX\Core\Widgets\Dialog;
 use SystemX\Core\Widgets\GroupBox;
+use SystemX\Core\Widgets\Image;
 use SystemX\Core\Widgets\Label;
 use SystemX\Core\Widgets\MenuBar;
 use SystemX\Core\Widgets\MenuButton;
@@ -76,7 +78,7 @@ class ControlsApp extends App
         $wifi = $this->wifi ? 'on' : 'off';
         $dlg = $this->showDialog ? 'open' : 'closed';
 
-        return Window::make('Controls')->size(500, 480)->content([
+        return Window::make('Controls')->size(680, 480)->content([
             Stack::make()->content([
 
                 // The gallery IS a Tabs widget: one category tab per control type, so only
@@ -84,7 +86,7 @@ class ControlsApp extends App
                 // scrolling is not built yet, and a launched window grows to its content).
                 // The active category is durable. Panels pair to the tabs map by order.
                 Tabs::make()
-                    ->tabs(['display' => 'Display', 'inputs' => 'Inputs', 'containers' => 'Containers', 'dialogs' => 'Dialogs', 'menus' => 'Menus', 'tooltips' => 'Tooltips'])
+                    ->tabs(['display' => 'Display', 'inputs' => 'Inputs', 'containers' => 'Containers', 'dialogs' => 'Dialogs', 'menus' => 'Menus', 'tooltips' => 'Tooltips', 'images' => 'Images', 'charts' => 'Charts'])
                     ->active($this->activeCategory)
                     ->id('ctl-categories')
                     ->content([
@@ -241,6 +243,52 @@ class ControlsApp extends App
                             Tooltip::make('An inline status pill')
                                 ->side('right')
                                 ->content([Badge::make('Info')->tone('info')]),
+                        ]),
+
+                        // IMAGES: display-only. A plain image (no lightbox) and an enlargeable
+                        // one -- click it (or Enter/Space when focused) to open the client-only
+                        // lightbox, dismissed via Escape or a backdrop click.
+                        Stack::make()->content([
+                            Label::make('A plain image. src is a URL, never inline base64.'),
+                            Image::make(asset('images/gallery-demo.svg'))
+                                ->alt('Demo image')
+                                ->id('ctl-image-plain'),
+
+                            Separator::make(),
+                            Label::make('An enlargeable image. Click it to open the lightbox.'),
+                            Image::make(asset('images/gallery-demo-enlarge.svg'))
+                                ->alt('Enlarge me')
+                                ->enlargeable()
+                                ->id('ctl-image-enlarge'),
+                        ]),
+
+                        // CHARTS: hand-rolled SVG line/bar/area, each with two series over the
+                        // same reads/faults-per-hour demo categories. Display-only -- hover a
+                        // chart for the tooltip, no round-trip.
+                        Stack::make()->content([
+                            Label::make('Line: reads and faults per hour.'),
+                            Chart::make()->line()
+                                ->categories(['09:00', '10:00', '11:00', '12:00', '13:00'])
+                                ->series('Reads', [12, 15, 9, 18, 14])
+                                ->series('Faults', [1, 0, 2, 1, 0])
+                                ->height(160)
+                                ->id('chart-line'),
+
+                            Label::make('Bar: the same figures, grouped per hour.'),
+                            Chart::make()->bar()
+                                ->categories(['09:00', '10:00', '11:00', '12:00', '13:00'])
+                                ->series('Reads', [12, 15, 9, 18, 14])
+                                ->series('Faults', [1, 0, 2, 1, 0])
+                                ->height(160)
+                                ->id('chart-bar'),
+
+                            Label::make('Area: reads and faults, filled to the baseline.'),
+                            Chart::make()->area()
+                                ->categories(['09:00', '10:00', '11:00', '12:00', '13:00'])
+                                ->series('Reads', [12, 15, 9, 18, 14])
+                                ->series('Faults', [1, 0, 2, 1, 0])
+                                ->height(160)
+                                ->id('chart-area'),
                         ]),
                     ])
                     ->onChange(fn (WidgetEvent $event) => $this->activeCategory = $event->asString()),

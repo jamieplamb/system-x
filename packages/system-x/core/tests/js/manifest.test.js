@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-// Importing the barrel self-registers all 11 core renderers into the singleton.
+// Importing the barrel self-registers all 27 core renderers into the singleton.
 import { registry } from '../../resources/js/system-x/renderers.js';
 // The manifest the PHP pairing test reads -- imported as data, so this asserts
 // against the exact same source of truth.

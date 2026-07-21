@@ -42,7 +42,12 @@ return [
                     'local_pk' => env('REVERB_TLS_KEY'),
                 ]),
             ],
-            'max_request_size' => env('REVERB_MAX_REQUEST_SIZE', 10_000),
+            // system-x broadcasts whole rendered window TREES (DesktopRendered), not tiny deltas -- a
+            // moderately-sized grid (a full page of rows, each with cells + selection + row-action keys)
+            // serialises well past Pusher's 10KB protocol default. Raise the server-side publish cap so a
+            // real window frame isn't rejected ("Payload too large"). 256KB is generous headroom for any
+            // realistic tree while still bounding a runaway payload.
+            'max_request_size' => env('REVERB_MAX_REQUEST_SIZE', 256_000),
             'scaling' => [
                 'enabled' => env('REVERB_SCALING_ENABLED', false),
                 'channel' => env('REVERB_SCALING_CHANNEL', 'reverb'),
@@ -101,7 +106,9 @@ return [
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections' => env('REVERB_APP_MAX_CONNECTIONS'),
-                'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
+                // Match max_request_size: a whole-tree DesktopRendered frame is far larger than the 10KB
+                // protocol default, so the per-app message cap must allow it too (see max_request_size).
+                'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 256_000),
                 'accept_client_events_from' => env('REVERB_APP_ACCEPT_CLIENT_EVENTS_FROM', 'members'),
                 'rate_limiting' => [
                     'enabled' => env('REVERB_APP_RATE_LIMITING_ENABLED', false),

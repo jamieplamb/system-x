@@ -86,7 +86,7 @@ class ShellBootMetadataTest extends TestCase
 
         // The launcher's app grid rides in the same blob (the registry metadata).
         $apps = collect($boot['apps']);
-        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo'], $apps->pluck('slug')->all());
+        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo', 'sxpro.demo'], $apps->pluck('slug')->all());
 
         // Belt-and-braces: the concrete JSON substring is present too (S4).
         $this->assertStringContainsString('"title":"Hello"', $html);
@@ -166,7 +166,7 @@ class ShellBootMetadataTest extends TestCase
         $apps = collect($this->parseBoot($html)['apps'])->pluck('slug')->all();
 
         $this->assertNotContains('hello', $apps);
-        $this->assertEqualsCanonicalizing(['notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo'], $apps);
+        $this->assertEqualsCanonicalizing(['notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo', 'sxpro.demo'], $apps);
     }
 
     public function test_a_system_app_is_never_filtered_out_of_the_boot_apps(): void
@@ -185,7 +185,7 @@ class ShellBootMetadataTest extends TestCase
         $apps = collect($this->parseBoot($html)['apps'])->pluck('slug')->all();
 
         $this->assertContains('appearance', $apps);
-        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo'], $apps);
+        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo', 'sxpro.demo'], $apps);
     }
 
     public function test_a_fresh_user_with_nothing_uninstalled_gets_every_app_in_the_boot(): void
@@ -199,7 +199,7 @@ class ShellBootMetadataTest extends TestCase
 
         $apps = collect($this->parseBoot($html)['apps'])->pluck('slug')->all();
 
-        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo'], $apps);
+        $this->assertEqualsCanonicalizing(['hello', 'notes', 'controls', 'appearance', 'about', 'apps', 'audit', 'example.todo', 'sxpro.demo'], $apps);
     }
 
     public function test_the_boot_layout_excludes_system_apps(): void

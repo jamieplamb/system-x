@@ -82,6 +82,18 @@
   --sx-warn:    var(--sx-amber-500);
   --sx-ok:      var(--sx-green-500);
   --sx-info:    var(--sx-blue-500);
+
+  /* Chart categorical palette (Chart widget series 1-6) — six legible, mutually
+     distinct hues drawn from the same desaturated semantic family as the badge/
+     accent hues above. This is the light-surface tuning (readable on --sx-face /
+     --sx-surface-bright); [data-sx-theme='dark'] overrides with lighter tints for
+     dark faces. Component CSS must reference these tokens, never raw hex. */
+  --sx-chart-1: var(--sx-blue-500);   /* blue */
+  --sx-chart-2: #a85e17;              /* orange */
+  --sx-chart-3: #276b31;              /* green */
+  --sx-chart-4: var(--sx-red-500);    /* red */
+  --sx-chart-5: #6b4fa0;              /* purple */
+  --sx-chart-6: #1f6d70;              /* teal */
 }
 
 ::selection { background: var(--sx-selection-bg); color: var(--sx-selection-fg); }

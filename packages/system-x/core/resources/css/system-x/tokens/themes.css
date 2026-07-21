@@ -112,6 +112,15 @@
   --sx-titlebar-inactive-to:   #262629;
   --sx-titlebar-inactive-text: #87878e;
   --sx-window-border:          rgba(0,0,0,.6);
+
+  /* Chart categorical palette — lighter tints of the light-theme hues (colors.css),
+     tuned for contrast against the dark faces above (--sx-face / --sx-face-raised). */
+  --sx-chart-1: #6fa4e8;  /* blue */
+  --sx-chart-2: #e0a552;  /* orange */
+  --sx-chart-3: #6fc077;  /* green */
+  --sx-chart-4: #e3776a;  /* red */
+  --sx-chart-5: #ab8fd4;  /* purple */
+  --sx-chart-6: #4bc0be;  /* teal */
 }
 
 /* =============================================================

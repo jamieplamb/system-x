@@ -85,3 +85,43 @@ export function openOverlay({ anchorEl, side = 'below', trap = true, build, onDi
 
     return { close: doClose };
 }
+
+// Centered modal overlay for a lightbox (client-only, no anchor). Portals a backdrop + centered
+// content to document.body, traps focus (createFocusTrap remembers + restores the trigger focus),
+// and dismisses on backdrop-mousedown-on-self or CAPTURE-phase Escape (stopPropagation so one press
+// closes THIS layer only -- a dialog/menu behind gets the next press, mirroring openOverlay's
+// layering). Returns { close }; close is idempotent. build() returns the content element.
+export function openModalOverlay({ build, onDismiss }) {
+    let backdrop = null;
+    let trapHandle = null;
+
+    const doClose = () => {
+        if (!backdrop) return;
+        document.removeEventListener('keydown', onKeydown, true);
+        if (trapHandle) { trapHandle.release(); trapHandle = null; } // restores focus to the trigger
+        backdrop.remove();
+        backdrop = null;
+        if (onDismiss) onDismiss();
+    };
+
+    const onKeydown = (e) => {
+        if (e.key === 'Escape') { e.stopPropagation(); doClose(); }
+    };
+
+    backdrop = document.createElement('div');
+    backdrop.className = 'sx-lightbox-backdrop';
+    backdrop.setAttribute('role', 'dialog');
+    backdrop.setAttribute('aria-modal', 'true');
+    // mousedown on the backdrop ITSELF (not the content) dismisses -- a drag that releases on the
+    // backdrop after starting on the image must not close (e.target === backdrop guard).
+    backdrop.addEventListener('mousedown', (e) => { if (e.target === backdrop) doClose(); });
+
+    const content = build({ close: doClose });
+    backdrop.appendChild(content);
+    document.body.appendChild(backdrop);
+
+    document.addEventListener('keydown', onKeydown, true);
+    trapHandle = createFocusTrap(content); // content must contain a focusable (the big img gets tabindex=0)
+
+    return { close: doClose };
+}

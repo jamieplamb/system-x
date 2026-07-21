@@ -199,6 +199,10 @@ class AppInstallTest extends DuskTestCase
             $browser->waitUsing(5, 100, fn () => $browser->attribute('[data-sx-app-action="example.todo"]', 'data-sx-installed') === 'true')
                 ->click('[data-sx-app-action="example.todo"]')
                 ->waitUsing(5, 100, fn () => $browser->attribute('[data-sx-app-action="example.todo"]', 'data-sx-installed') === 'false');
+            // Uninstall the pro-datagrid demo (Cameras) -- a user app too, registered in dev/test/CI.
+            $browser->waitUsing(5, 100, fn () => $browser->attribute('[data-sx-app-action="sxpro.demo"]', 'data-sx-installed') === 'true')
+                ->click('[data-sx-app-action="sxpro.demo"]')
+                ->waitUsing(5, 100, fn () => $browser->attribute('[data-sx-app-action="sxpro.demo"]', 'data-sx-installed') === 'false');
 
             // The launcher is now empty: the empty-state hint shows, ZERO tiles.
             $browser->click('[data-sx-launcher]')
