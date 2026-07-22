@@ -146,6 +146,48 @@ class WindowManagerTest extends DuskTestCase
         });
     }
 
+    // Double-click the titlebar toggles maximise -- in a REAL browser. The jsdom unit test for this
+    // dispatches a synthetic dblclick straight at the element, which proves the handler's selectors
+    // but NOT that a real double-click ever produces a dblclick that reaches the mount. Drag-arming
+    // on the same pointerdown (setPointerCapture + preventDefault) can suppress/retarget the browser's
+    // compatibility click events, and only a real driver catches that.
+    public function test_double_clicking_the_titlebar_toggles_maximise(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $this->loginAsDemoUser($browser)
+                ->waitFor('[data-window-id="hello"] .sx-window');
+
+            // A REAL WebDriver double-click on the title text (not a control).
+            $browser->doubleClick('[data-window-id="hello"] .sx-titlebar-text');
+            $browser->pause(200);
+
+            $maxed = $browser->script(
+                "const s = document.querySelector('[data-window-id=\"hello\"]'); "
+                // ?? 'unset': JSON.stringify DROPS undefined-valued keys, so a never-maximised
+                // surface would come back with no 'max' key at all and blow up as a missing index
+                // instead of failing the assertion cleanly.
+                .'return JSON.stringify({ max: s.dataset.sxMax ?? \'unset\', '
+                ."restore: !!s.querySelector('[data-sx-control=\"restore\"]') });"
+            )[0];
+            $maxed = json_decode($maxed, true);
+
+            $this->assertEquals('true', $maxed['max'], 'double-clicking the titlebar did not maximise');
+            $this->assertTrue($maxed['restore'], 'the maximise control did not flip to restore');
+
+            // And again to restore -- the toggle has to work both ways.
+            $browser->doubleClick('[data-window-id="hello"] .sx-titlebar-text');
+            $browser->pause(200);
+
+            $restored = $browser->script(
+                "const s = document.querySelector('[data-window-id=\"hello\"]'); "
+                .'return JSON.stringify({ max: s.dataset.sxMax });'
+            )[0];
+            $restored = json_decode($restored, true);
+
+            $this->assertEquals('false', $restored['max'], 'double-clicking a maximised titlebar did not restore');
+        });
+    }
+
     // Close (Plan 5a, Task 9, D7): clicking the close control removes the surface client-side
     // AND POSTs /system-x/wm/close, which drops the open-row and FORGETS the bag. Close-then-
     // relaunch then mints a FRESH window (the old row is gone, so launch isn't a singleton hit).

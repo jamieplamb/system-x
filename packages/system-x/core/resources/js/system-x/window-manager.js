@@ -173,10 +173,19 @@ export class WindowManager {
         this.mount.addEventListener('dblclick', (e) => {
             // Double-click the titlebar (but NOT a control) toggles maximise, like the
             // mockup's onDoubleClick. The control has its own single-click path above.
-            if (!e.target.closest('.sx-titlebar') || e.target.closest('[data-sx-control]')) {
+            //
+            // Resolve the hit element from COORDINATES, not e.target: maybeStartDrag takes
+            // setPointerCapture on the surface for the same press, and capture retargets the
+            // click/dblclick to the capture element. e.target is therefore the SURFACE, and
+            // .closest('.sx-titlebar') from there can never match (the titlebar is a
+            // descendant, not an ancestor) -- which silently killed every real double-click
+            // while the jsdom test, dispatching a synthetic event straight at the titlebar,
+            // stayed green.
+            const hit = this.hitElement(e);
+            if (!hit || !hit.closest('.sx-titlebar') || hit.closest('[data-sx-control]')) {
                 return;
             }
-            const surface = e.target.closest('[data-window-id]');
+            const surface = hit.closest('[data-window-id]');
             if (surface) {
                 this.toggleMaximise(surface.dataset.windowId);
             }
@@ -604,6 +613,18 @@ export class WindowManager {
     // offsetWidth/getBoundingClientRect mid-drag, so it never thrashes layout. The move
     // writes the surface transform (which the morph never touches, D3), so a server frame
     // arriving mid-drag can't fight the position.
+    // The element actually under the pointer. Pointer capture retargets click/dblclick to the
+    // capture element, so e.target lies about what was hit -- elementFromPoint doesn't. Falls back
+    // to e.target where elementFromPoint is unavailable or returns nothing (jsdom doesn't implement
+    // it), which is exactly the case where nothing retargeted the event anyway.
+    hitElement(e) {
+        try {
+            return document.elementFromPoint?.(e.clientX, e.clientY) ?? e.target;
+        } catch {
+            return e.target;
+        }
+    }
+
     maybeStartDrag(e, surface = e.target.closest('[data-window-id]')) {
         if (!surface) {
             return;

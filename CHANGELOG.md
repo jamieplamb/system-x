@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.1
+
+- Fix double-click on a window titlebar not maximising. Arming a drag on the same
+  press takes pointer capture on the surface, and capture retargets the resulting
+  click/dblclick to the capture element -- so the handler saw the surface rather
+  than the titlebar and bailed. The hit element is now resolved from the pointer
+  coordinates. Covered by a browser test doing a real double-click; the previous
+  unit test dispatched a synthetic event and could not catch this.
+
+## 1.1.0
+
+- Add the Image widget (a src/alt image node, for image cells and thumbnails) and
+  the Chart widget.
+
 ## 1.0.1
 
 - Point the package homepage and docs links at the new documentation site.
